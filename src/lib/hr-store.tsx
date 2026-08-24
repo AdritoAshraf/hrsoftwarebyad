@@ -339,6 +339,27 @@ function useHRState() {
     };
   }, [attendance, workers, payrolls, settings]);
 
+  /* ---------------- buyer income & other costs ---------------- */
+
+  const addBuyerIncome = (input: Omit<BuyerIncome, "id">) => {
+    const row: BuyerIncome = { ...input, id: rid("BIN", 4) };
+    setBuyerIncome((r) => [row, ...r]);
+    logActivity(input.buyer, `Buyer payment logged — ${input.description}`);
+    return row;
+  };
+  const updateBuyerIncome = (id: string, patch: Partial<BuyerIncome>) =>
+    setBuyerIncome((r) => r.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+  const deleteBuyerIncome = (id: string) => setBuyerIncome((r) => r.filter((x) => x.id !== id));
+
+  const addOtherCost = (input: Omit<OtherCost, "id">) => {
+    const row: OtherCost = { ...input, id: rid("COST", 4) };
+    setOtherCosts((r) => [row, ...r]);
+    return row;
+  };
+  const updateOtherCost = (id: string, patch: Partial<OtherCost>) =>
+    setOtherCosts((r) => r.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+  const deleteOtherCost = (id: string) => setOtherCosts((r) => r.filter((x) => x.id !== id));
+
   return {
     workers,
     applications,
