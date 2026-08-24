@@ -1,49 +1,65 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertTriangle, Clock, Info } from "lucide-react";
+import { AlertTriangle, Clock, Info, RotateCcw } from "lucide-react";
 import { AdminShell } from "@/components/hr/admin-shell";
 import { Card, Person } from "@/components/hr/bits";
-import { notifications, type Notice } from "@/lib/mock-data";
+import { useHR } from "@/lib/hr-store";
+import type { Notice } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/notifications")({
   head: () => ({
     meta: [
       { title: "Notifications Center — WorkHR" },
-      { name: "description", content: "Probation expiry alerts and system notices grouped by urgency." },
+      { name: "description", content: "Live contract expiry alerts and system notices grouped by urgency." },
       { property: "og:title", content: "Notifications Center — WorkHR" },
-      { property: "og:description", content: "Probation expiry alerts and system notices grouped by urgency." },
+      { property: "og:description", content: "Live contract expiry alerts and system notices grouped by urgency." },
     ],
   }),
   component: NotificationsPage,
 });
 
-const groups = [
-  { key: "critical", title: "Urgent — 7 days or less", icon: AlertTriangle, tone: "bg-danger-soft text-danger" },
-  { key: "warning", title: "Upcoming — within 1 month", icon: Clock, tone: "bg-warning-soft text-warning" },
-  { key: "info", title: "General updates", icon: Info, tone: "bg-secondary text-muted-foreground" },
-] as const;
+function NotificationsPage() {
+  const { notices, settings, reactivateWorker } = useHR();
 
-function Row({ n, tone }: { n: Notice; tone: string }) {
-  return (
-    <div className="flex items-center gap-4 py-3.5">
+  const groups = [
+    {
+      key: "critical" as const,
+      title: `Urgent — ${settings.finalReminderDays} days or less`,
+      icon: AlertTriangle,
+      tone: "bg-danger-soft text-danger",
+    },
+    {
+      key: "warning" as const,
+      title: `Upcoming — within ${settings.firstReminderDays} days`,
+      icon: Clock,
+      tone: "bg-warning-soft text-warning",
+    },
+    { key: "info" as const, title: "General updates", icon: Info, tone: "bg-secondary text-muted-foreground" },
+  ];
+
+  const Row = ({ n, tone }: { n: Notice; tone: string }) => (
+    <div className="flex flex-wrap items-center gap-4 py-3.5">
       <Person name={n.worker} sub={n.when} />
       <p className="text-sm text-muted-foreground">{n.message}</p>
       <span className={cn("ml-auto rounded-full px-2.5 py-1 text-xs font-medium capitalize", tone)}>
         {n.urgency}
       </span>
-      <button className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary">
-        View Worker
-      </button>
+      {n.workerId && (
+        <button
+          onClick={() => reactivateWorker(n.workerId!)}
+          className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+        >
+          <RotateCcw className="size-3.5" /> Reactivate
+        </button>
+      )}
     </div>
   );
-}
 
-function NotificationsPage() {
   return (
     <AdminShell title="Notifications Center">
       <div className="space-y-3">
         {groups.map((g) => {
-          const items = notifications.filter((n) => n.urgency === g.key);
+          const items = notices.filter((n) => n.urgency === g.key);
           if (!items.length) return null;
           return (
             <Card key={g.key}>
@@ -64,6 +80,11 @@ function NotificationsPage() {
             </Card>
           );
         })}
+        {notices.length === 0 && (
+          <Card>
+            <p className="py-6 text-center text-sm text-muted-foreground">Nothing needs your attention.</p>
+          </Card>
+        )}
       </div>
     </AdminShell>
   );
