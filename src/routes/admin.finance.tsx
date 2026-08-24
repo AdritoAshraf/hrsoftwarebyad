@@ -7,7 +7,6 @@ import {
   Card,
   DataTable,
   EmptyRow,
-  EmptyRow as _EmptyRow,
   Field,
   GhostButton,
   Modal,
@@ -406,7 +405,7 @@ function IncomeForm({
   onSave,
   onClose,
 }: {
-  edit?: BuyerIncome;
+  edit?: BuyerIncome | undefined;
   onSave: (v: Omit<BuyerIncome, "id">) => void;
   onClose: () => void;
 }) {
@@ -473,7 +472,7 @@ function CostForm({
   onSave,
   onClose,
 }: {
-  edit?: OtherCost;
+  edit?: OtherCost | undefined;
   onSave: (v: Omit<OtherCost, "id">) => void;
   onClose: () => void;
 }) {
