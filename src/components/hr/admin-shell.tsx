@@ -18,7 +18,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { admin, avatarUrl } from "@/lib/mock-data";
+import { avatarUrl } from "@/lib/mock-data";
 
 const mainMenu = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard },

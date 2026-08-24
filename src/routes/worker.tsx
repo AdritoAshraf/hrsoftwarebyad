@@ -21,7 +21,7 @@ const now = () =>
 
 function WorkerDashboard() {
   const [step, setStep] = useState<"idle" | "picking" | "in">("idle");
-  const [location, setLocation] = useState(locations[0].name);
+  const [location, setLocation] = useState(locations[0]?.name ?? "");
   const [checkedInAt, setCheckedInAt] = useState<string | null>(null);
   const [tab, setTab] = useState<"dashboard" | "history">("dashboard");
   const me = "Hazel Nutt";
