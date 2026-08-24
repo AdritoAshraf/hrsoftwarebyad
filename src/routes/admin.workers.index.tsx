@@ -6,7 +6,7 @@ import { Card, DataTable, EmptyRow, Person, StatusBadge, Td, Th } from "@/compon
 import { useHR } from "@/lib/hr-store";
 import { fmtDate, daysUntil } from "@/lib/hr-utils";
 
-export const Route = createFileRoute("/admin/workers")({
+export const Route = createFileRoute("/admin/workers/")({
   head: () => ({
     meta: [
       { title: "Worker Directory — WorkHR" },
