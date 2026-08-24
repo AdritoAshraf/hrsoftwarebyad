@@ -195,11 +195,11 @@ export function Modal({
   wide?: boolean;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/40 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-foreground/40 backdrop-blur-sm md:items-start md:p-4">
       <div
         className={cn(
-          "card-surface my-8 w-full p-6 shadow-xl",
-          wide ? "max-w-2xl" : "max-w-lg",
+          "card-surface w-full p-5 shadow-xl max-md:min-h-[90dvh] max-md:animate-in max-md:slide-in-from-bottom max-md:rounded-b-none md:my-8 md:p-6",
+          wide ? "md:max-w-2xl" : "md:max-w-lg",
         )}
       >
         <div className="mb-5 flex items-start justify-between gap-4">
