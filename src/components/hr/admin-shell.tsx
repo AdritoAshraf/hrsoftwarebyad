@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/mock-data";
+import { useHR } from "@/lib/hr-store";
 
 const mainMenu = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -64,6 +65,8 @@ export function AdminShell({
   action?: ReactNode;
   children: ReactNode;
 }) {
+  const { notices, workers } = useHR();
+  const urgentCount = notices.filter((n) => n.urgency !== "info").length;
   return (
     <div className="flex min-h-screen bg-background p-3 gap-3">
       <aside className="card-surface sticky top-3 hidden h-[calc(100vh-1.5rem)] w-64 shrink-0 flex-col p-4 lg:flex">
@@ -121,7 +124,7 @@ export function AdminShell({
             />
           </div>
 
-          {[Mail, RefreshCw, Bell].map((Icon, i) => (
+          {[Mail, RefreshCw].map((Icon, i) => (
             <button
               key={i}
               className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-secondary"
@@ -129,9 +132,21 @@ export function AdminShell({
               <Icon className="size-4" />
             </button>
           ))}
+          <Link
+            to="/admin/notifications"
+            className="relative grid size-9 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-secondary"
+            aria-label={`Notifications, ${urgentCount} urgent`}
+          >
+            <Bell className="size-4" />
+            {urgentCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 grid min-w-4.5 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold text-primary-foreground">
+                {urgentCount}
+              </span>
+            )}
+          </Link>
 
           <div className="hidden items-center xl:flex">
-            {["Hazel Nutt", "Simon Cyrene", "Nadia Karim"].map((n, i) => (
+            {workers.slice(0, 3).map((w) => w.name).map((n, i) => (
               <img
                 key={n}
                 src={avatarUrl(n)}
@@ -140,7 +155,7 @@ export function AdminShell({
               />
             ))}
             <span className="-ml-2.5 grid size-8 place-items-center rounded-full border-2 border-card bg-primary-soft text-[10px] font-semibold text-primary">
-              +10
+              +{Math.max(0, workers.length - 3)}
             </span>
           </div>
 
