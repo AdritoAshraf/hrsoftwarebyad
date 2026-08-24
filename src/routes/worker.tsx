@@ -76,11 +76,11 @@ function WorkerDashboard() {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex min-w-0 items-center gap-3">
             <select
               value={me.id}
               onChange={(e) => setCurrentWorkerId(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-card px-2 text-sm outline-none focus:border-primary"
+              className="h-9 max-w-32 rounded-lg border border-border bg-card px-2 text-sm outline-none focus:border-primary"
               aria-label="Signed in as"
             >
               {workers.map((w) => (
@@ -89,7 +89,7 @@ function WorkerDashboard() {
                 </option>
               ))}
             </select>
-            <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+            <Link to="/" className="hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground md:flex">
               <ArrowLeft className="size-4" /> Switch role
             </Link>
             <img src={avatarUrl(me.name)} alt={me.name} className="size-9 rounded-full bg-secondary" />
