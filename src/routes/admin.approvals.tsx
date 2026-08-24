@@ -91,17 +91,22 @@ function Approvals() {
   const { applications, rejected, approveApplication, rejectApplication } = useHR();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [flashWorkerId, setFlashWorkerId] = useState<string | null>(null);
   const selected = applications.find((a) => a.id === selectedId) ?? null;
 
   const approve = (id: string) => {
     const w = approveApplication(id);
     setSelectedId(null);
-    if (w) setFlash(`${w.name} approved — worker code ${w.id}, expires ${fmtDate(w.expiry)}.`);
+    if (w) {
+      setFlashWorkerId(w.id);
+      setFlash(`Worker approved — Code: ${w.id} · expires ${fmtDate(w.expiry)}.`);
+    }
   };
 
   const reject = (id: string, name: string) => {
     rejectApplication(id);
     setSelectedId(null);
+    setFlashWorkerId(null);
     setFlash(`${name}'s application was rejected.`);
   };
 
@@ -122,7 +127,16 @@ function Approvals() {
           <div className="card-surface flex items-center gap-3 px-5 py-3 text-sm">
             <Check className="size-4 text-success" />
             <span>{flash}</span>
-            <button onClick={() => setFlash(null)} className="ml-auto text-muted-foreground">
+            {flashWorkerId && (
+              <Link
+                to="/admin/workers/$id"
+                params={{ id: flashWorkerId }}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+              >
+                View Worker
+              </Link>
+            )}
+            <button onClick={() => { setFlash(null); setFlashWorkerId(null); }} className="ml-auto text-muted-foreground">
               <X className="size-4" />
             </button>
           </div>
