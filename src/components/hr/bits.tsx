@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/mock-data";
 
@@ -22,6 +23,7 @@ const badgeTones: Record<string, string> = {
   "Full-time": "bg-success-soft text-success",
   Pending: "bg-warning-soft text-warning",
   "On Leave": "bg-warning-soft text-warning",
+  "Expiring Soon": "bg-warning-soft text-warning",
   Expired: "bg-danger-soft text-danger",
   Rejected: "bg-danger-soft text-danger",
   Self: "bg-primary-soft text-primary",
@@ -32,7 +34,7 @@ export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
+        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap",
         badgeTones[status] ?? "bg-secondary text-muted-foreground",
       )}
     >
@@ -114,5 +116,116 @@ export function DataTable({ head, children }: { head: ReactNode; children: React
         <tbody className="divide-y divide-border">{children}</tbody>
       </table>
     </div>
+  );
+}
+
+export function EmptyRow({ colSpan, text }: { colSpan: number; text: string }) {
+  return (
+    <tr>
+      <td colSpan={colSpan} className="px-4 py-10 text-center text-sm text-muted-foreground">
+        {text}
+      </td>
+    </tr>
+  );
+}
+
+/* ---------------- form + modal primitives ---------------- */
+
+export const inputCls =
+  "mt-1.5 h-10 w-full rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-primary";
+
+export function Field({
+  label,
+  hint,
+  children,
+  className,
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <label className={cn("block", className)}>
+      <span className="text-sm font-medium">{label}</span>
+      {children}
+      {hint && <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>}
+    </label>
+  );
+}
+
+export function Modal({
+  title,
+  description,
+  onClose,
+  children,
+  wide,
+}: {
+  title: string;
+  description?: string;
+  onClose: () => void;
+  children: ReactNode;
+  wide?: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/40 p-4 backdrop-blur-sm">
+      <div
+        className={cn(
+          "card-surface my-8 w-full p-6 shadow-xl",
+          wide ? "max-w-2xl" : "max-w-lg",
+        )}
+      >
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+            {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="grid size-8 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground hover:bg-secondary"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function PrimaryButton({
+  children,
+  className,
+  ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...rest}
+      className={cn(
+        "flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function GhostButton({
+  children,
+  className,
+  ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...rest}
+      className={cn(
+        "flex h-10 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-medium hover:bg-secondary",
+        className,
+      )}
+    >
+      {children}
+    </button>
   );
 }

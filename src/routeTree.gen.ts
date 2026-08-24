@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as WorkerRouteImport } from './routes/worker'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminApprovalsRouteImport } from './routes/admin.approvals'
@@ -25,6 +26,11 @@ import { Route as AdminWorkersRouteImport } from './routes/admin.workers'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkerRoute = WorkerRouteImport.update({
@@ -85,6 +91,7 @@ const AdminWorkersRoute = AdminWorkersRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/register': typeof RegisterRoute
   '/worker': typeof WorkerRoute
   '/admin/approvals': typeof AdminApprovalsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/register': typeof RegisterRoute
   '/worker': typeof WorkerRoute
   '/admin/approvals': typeof AdminApprovalsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
@@ -114,6 +122,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/register': typeof RegisterRoute
   '/worker': typeof WorkerRoute
   '/admin/approvals': typeof AdminApprovalsRoute
   '/admin/attendance': typeof AdminAttendanceRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/register'
     | '/worker'
     | '/admin/approvals'
     | '/admin/attendance'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/register'
     | '/worker'
     | '/admin/approvals'
     | '/admin/attendance'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/register'
     | '/worker'
     | '/admin/approvals'
     | '/admin/attendance'
@@ -173,6 +185,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RegisterRoute: typeof RegisterRoute
   WorkerRoute: typeof WorkerRoute
   AdminApprovalsRoute: typeof AdminApprovalsRoute
   AdminAttendanceRoute: typeof AdminAttendanceRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/worker': {
@@ -277,6 +297,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RegisterRoute: RegisterRoute,
   WorkerRoute: WorkerRoute,
   AdminApprovalsRoute: AdminApprovalsRoute,
   AdminAttendanceRoute: AdminAttendanceRoute,

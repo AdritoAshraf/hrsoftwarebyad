@@ -1,8 +1,25 @@
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, ChevronDown, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { AdminShell } from "@/components/hr/admin-shell";
-import { Card, DataTable, Person, StatusBadge, Td, Th, StatCard } from "@/components/hr/bits";
-import { attendance } from "@/lib/mock-data";
+import {
+  Card,
+  DataTable,
+  EmptyRow,
+  Field,
+  GhostButton,
+  Modal,
+  Person,
+  PrimaryButton,
+  StatCard,
+  StatusBadge,
+  Td,
+  Th,
+  inputCls,
+} from "@/components/hr/bits";
+import { useHR } from "@/lib/hr-store";
+import { fmtDate, todayISO, hoursBetween } from "@/lib/hr-utils";
+import type { Attendance } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/admin/attendance")({
   head: () => ({
@@ -16,32 +33,164 @@ export const Route = createFileRoute("/admin/attendance")({
   component: AttendancePage,
 });
 
+type FormState = { workerId: string; date: string; in: string; out: string; location: string };
+
+function EntryForm({
+  initial,
+  editing,
+  onClose,
+}: {
+  initial: FormState;
+  editing: Attendance | null;
+  onClose: () => void;
+}) {
+  const { workers, locations, addAttendance, updateAttendance } = useHR();
+  const [form, setForm] = useState<FormState>(initial);
+  const set = (k: keyof FormState) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const w = workers.find((x) => x.id === form.workerId);
+    if (!w) return;
+    if (editing) {
+      updateAttendance(editing.id, { ...form, worker: w.name });
+    } else {
+      addAttendance({ ...form, worker: w.name, source: "Admin" });
+    }
+    onClose();
+  };
+
+  return (
+    <Modal
+      title={editing ? "Edit attendance entry" : "Add attendance entry"}
+      description={editing ? `Editing ${editing.id}` : "Manually recorded entries are tagged as Admin."}
+      onClose={onClose}
+    >
+      <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
+        <Field label="Worker" className="sm:col-span-2">
+          <select required value={form.workerId} onChange={set("workerId")} className={inputCls}>
+            {workers.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.name} — {w.id}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Date">
+          <input required type="date" value={form.date} onChange={set("date")} className={inputCls} />
+        </Field>
+        <Field label="Location">
+          <select required value={form.location} onChange={set("location")} className={inputCls}>
+            {locations.map((l) => (
+              <option key={l.id}>{l.name}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Time in">
+          <input required type="time" value={form.in} onChange={set("in")} className={inputCls} />
+        </Field>
+        <Field label="Time out">
+          <input required type="time" value={form.out} onChange={set("out")} className={inputCls} />
+        </Field>
+        <p className="sm:col-span-2 rounded-lg bg-secondary/60 px-3 py-2 text-sm text-muted-foreground">
+          Total hours: <strong className="text-foreground">{hoursBetween(form.in, form.out).toFixed(2)} h</strong>
+        </p>
+        <div className="sm:col-span-2 flex justify-end gap-2">
+          <GhostButton type="button" onClick={onClose}>
+            Cancel
+          </GhostButton>
+          <PrimaryButton type="submit">{editing ? "Save changes" : "Add entry"}</PrimaryButton>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 function AttendancePage() {
+  const { attendance, workers, locations, deleteAttendance, openShifts } = useHR();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Attendance | null>(null);
+  const [workerFilter, setWorkerFilter] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  const rows = useMemo(
+    () =>
+      [...attendance]
+        .filter((a) => (workerFilter === "all" ? true : a.workerId === workerFilter))
+        .filter((a) => (from ? a.date >= from : true))
+        .filter((a) => (to ? a.date <= to : true))
+        .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)),
+    [attendance, workerFilter, from, to],
+  );
+
+  const today = todayISO();
+  const todayRows = attendance.filter((a) => a.date === today);
+  const avg = rows.length ? rows.reduce((t, a) => t + a.hours, 0) / rows.length : 0;
+
+  const blank: FormState = {
+    workerId: workers[0]?.id ?? "",
+    date: today,
+    in: "08:00",
+    out: "17:00",
+    location: locations[0]?.name ?? "",
+  };
+
   return (
     <AdminShell
       title="Attendance"
       action={
-        <button className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">
+        <button
+          onClick={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
+          className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+        >
           <Plus className="size-4" /> Add Entry
         </button>
       }
     >
       <div className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-3">
-          <StatCard label="Checked In Today" value="132" delta="↗ 8" hint="workers" />
-          <StatCard label="Average Hours / Day" value="8.7h" delta="↗ 0.3h" hint="this week" />
-          <StatCard label="Missing Check-Outs" value="3" delta="↘ 1" tone="down" hint="needs review" />
+          <StatCard label="Entries Today" value={String(todayRows.length)} hint="recorded" />
+          <StatCard label="Average Hours / Entry" value={`${avg.toFixed(2)}h`} hint="current filter" />
+          <StatCard
+            label="Currently Checked In"
+            value={String(openShifts.length)}
+            hint="open shifts"
+            tone="down"
+          />
         </div>
 
         <Card className="p-0">
           <div className="flex flex-wrap items-center gap-3 p-5">
-            <h2 className="mr-auto text-base font-semibold">Attendance Log</h2>
-            <button className="flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm">
-              01 Aug - 31 Aug 2026 <ChevronDown className="size-4 text-muted-foreground" />
-            </button>
-            <button className="flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm text-muted-foreground">
-              All Workers <ChevronDown className="size-4" />
-            </button>
+            <h2 className="mr-auto text-base font-semibold">Attendance Log ({rows.length})</h2>
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-primary"
+            />
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-primary"
+            />
+            <select
+              value={workerFilter}
+              onChange={(e) => setWorkerFilter(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-primary"
+            >
+              <option value="all">All Workers</option>
+              {workers.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <DataTable
@@ -58,19 +207,32 @@ function AttendancePage() {
               </>
             }
           >
-            {attendance.map((a) => (
+            {rows.length === 0 && <EmptyRow colSpan={8} text="No attendance records for this filter." />}
+            {rows.map((a) => (
               <tr key={a.id} className="hover:bg-secondary/40">
                 <Td><Person name={a.worker} /></Td>
-                <Td>{a.date}</Td>
+                <Td>{fmtDate(a.date)}</Td>
                 <Td>{a.in}</Td>
                 <Td>{a.out}</Td>
                 <Td>{a.location}</Td>
                 <Td className="font-medium">{a.hours.toFixed(2)} h</Td>
                 <Td><StatusBadge status={a.source} /></Td>
                 <Td>
-                  <div className="flex justify-end">
-                    <button className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary">
+                  <div className="flex justify-end gap-1 text-muted-foreground">
+                    <button
+                      onClick={() => {
+                        setEditing(a);
+                        setOpen(true);
+                      }}
+                      className="rounded-md p-1.5 hover:bg-secondary hover:text-primary"
+                    >
                       <Pencil className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteAttendance(a.id)}
+                      className="rounded-md p-1.5 hover:bg-secondary hover:text-danger"
+                    >
+                      <Trash2 className="size-4" />
                     </button>
                   </div>
                 </Td>
@@ -79,6 +241,27 @@ function AttendancePage() {
           </DataTable>
         </Card>
       </div>
+
+      {open && (
+        <EntryForm
+          editing={editing}
+          initial={
+            editing
+              ? {
+                  workerId: editing.workerId,
+                  date: editing.date,
+                  in: editing.in,
+                  out: editing.out,
+                  location: editing.location,
+                }
+              : blank
+          }
+          onClose={() => {
+            setOpen(false);
+            setEditing(null);
+          }}
+        />
+      )}
     </AdminShell>
   );
 }
