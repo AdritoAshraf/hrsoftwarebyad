@@ -106,14 +106,40 @@ export function Td({ children, className }: { children?: ReactNode; className?: 
   return <td className={cn("px-4 py-3.5 text-sm", className)}>{children}</td>;
 }
 
-export function DataTable({ head, children }: { head: ReactNode; children: ReactNode }) {
+export function DataTable({
+  head,
+  labels,
+  children,
+}: {
+  head: ReactNode;
+  /** Column labels — enables the stacked-card layout on mobile. */
+  labels?: string[];
+  children: ReactNode;
+}) {
+  const rid = "dt" + useId().replace(/[^a-zA-Z0-9]/g, "");
+  const css = labels
+    ? `@media (max-width:767px){
+#${rid} thead{display:none}
+#${rid},#${rid} tbody,#${rid} tr,#${rid} td{display:block;width:100%}
+#${rid} tbody{border:0}
+#${rid} tr{border:1px solid var(--border);border-radius:1rem;padding:.35rem .75rem;margin-bottom:.65rem;background:var(--card)}
+#${rid} td{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.5rem .1rem;text-align:right;border-bottom:1px solid color-mix(in oklab,var(--border) 60%,transparent)}
+#${rid} td:last-child{border-bottom:0}
+#${rid} td::before{content:attr(data-l);font-size:.75rem;font-weight:500;color:var(--muted-foreground);text-align:left;flex:0 0 auto}
+#${rid} td>*{margin-left:auto}
+#${rid} td.dt-empty{display:block;text-align:center}
+#${rid} td.dt-empty::before{content:""}
+${labels.map((l, i) => `#${rid} td:nth-child(${i + 1})::before{content:"${l.replace(/"/g, "")}"}`).join("\n")}
+}`
+    : "";
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
+    <div className="overflow-x-auto md:overflow-x-auto">
+      {css && <style dangerouslySetInnerHTML={{ __html: css }} />}
+      <table id={rid} className="w-full border-collapse">
         <thead className="bg-secondary/70">
           <tr>{head}</tr>
         </thead>
-        <tbody className="divide-y divide-border">{children}</tbody>
+        <tbody className="divide-y divide-border max-md:divide-y-0">{children}</tbody>
       </table>
     </div>
   );
@@ -122,7 +148,7 @@ export function DataTable({ head, children }: { head: ReactNode; children: React
 export function EmptyRow({ colSpan, text }: { colSpan: number; text: string }) {
   return (
     <tr>
-      <td colSpan={colSpan} className="px-4 py-10 text-center text-sm text-muted-foreground">
+      <td colSpan={colSpan} className="dt-empty px-4 py-10 text-center text-sm text-muted-foreground">
         {text}
       </td>
     </tr>
