@@ -400,6 +400,14 @@ function useHRState() {
     deductionsData,
     weeklyReport,
     totals,
+    buyerIncome,
+    otherCosts,
+    addBuyerIncome,
+    updateBuyerIncome,
+    deleteBuyerIncome,
+    addOtherCost,
+    updateOtherCost,
+    deleteOtherCost,
   };
 }
 
