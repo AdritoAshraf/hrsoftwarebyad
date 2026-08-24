@@ -50,7 +50,7 @@ function WorkerDirectory() {
             All Workers ({rows.length}
             {rows.length !== workers.length ? ` of ${workers.length}` : ""})
           </h2>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
             <input
               value={q}

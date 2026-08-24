@@ -248,7 +248,7 @@ function PayrollsPage() {
         <Card className="p-0">
           <div className="flex flex-wrap items-center gap-3 p-5">
             <h2 className="mr-auto text-base font-semibold">Payroll list ({rows.length})</h2>
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
               <input
                 value={q}
