@@ -13,6 +13,7 @@ import {
   UserCheck,
   MapPin,
   BarChart3,
+  Scale,
   Search,
   Mail,
   RefreshCw,
@@ -38,6 +39,7 @@ const teamMenu = [
   { to: "/admin/workers", label: "Worker Directory", icon: Users },
   { to: "/admin/approvals", label: "Registration Approvals", icon: UserCheck },
   { to: "/admin/locations", label: "Locations", icon: MapPin },
+  { to: "/admin/finance", label: "Buyer & Profit/Loss", icon: Scale },
   { to: "/admin/reports", label: "Reports", icon: BarChart3 },
 ] as const;
 
@@ -54,6 +56,7 @@ const moreMenu = [
   { to: "/admin/approvals", label: "Registration Approvals", icon: UserCheck },
   { to: "/admin/notifications", label: "Notifications", icon: Bell },
   { to: "/admin/locations", label: "Locations", icon: MapPin },
+  { to: "/admin/finance", label: "Buyer & Profit/Loss", icon: Scale },
   { to: "/admin/settings", label: "Settings", icon: Settings },
   { to: "/admin/help", label: "Help & Center", icon: LifeBuoy },
   { to: "/", label: "Switch role", icon: RefreshCw },
