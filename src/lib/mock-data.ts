@@ -191,6 +191,8 @@ export const seedActivity: Notice[] = [
 export type Settings = {
   hourlyRate: number;
   overtimeMultiplier: number;
+  overtimeThreshold: number;
+  contractMonths: number;
   taxRate: number;
   niRate: number;
   pensionRate: number;
@@ -205,6 +207,8 @@ export type Settings = {
 export const seedSettings: Settings = {
   hourlyRate: 14.5,
   overtimeMultiplier: 1.5,
+  overtimeThreshold: 40,
+  contractMonths: 3,
   taxRate: 20,
   niRate: 12,
   pensionRate: 5,

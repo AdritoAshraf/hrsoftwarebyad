@@ -160,7 +160,7 @@ function useHRState() {
     const rate = w?.rate ?? settings.hourlyRate;
     const hours = hoursInRange(workerId, from, to);
     const weeks = Math.max(1, Math.ceil((daysUntil(to) - daysUntil(from) + 1) / 7));
-    const normal = Math.min(hours, 40 * weeks);
+    const normal = Math.min(hours, settings.overtimeThreshold * weeks);
     const overtime = Math.max(0, hours - normal);
     const gross = round(normal * rate + overtime * rate * settings.overtimeMultiplier);
     const tax = round(gross * ((settings.taxRate + settings.niRate) / 100));
