@@ -215,14 +215,7 @@ export function AdminShell({
         <header className="card-surface mb-3 flex items-center gap-2 px-4 py-3 lg:hidden">
           {searchOpen ? (
             <>
-              <div className="relative flex-1">
-                <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
-                <input
-                  autoFocus
-                  placeholder="Search anything..."
-                  className="h-9 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:border-primary"
-                />
-              </div>
+              <GlobalSearch className="flex-1" autoFocus onDone={() => setSearchOpen(false)} />
               <button
                 onClick={() => setSearchOpen(false)}
                 aria-label="Close search"
