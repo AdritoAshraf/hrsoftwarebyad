@@ -56,13 +56,13 @@ function WorkerDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-5 py-4">
-          <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
+        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3 md:flex-wrap md:px-5 md:py-4">
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
             <Sparkles className="size-4" />
           </span>
           <span className="text-lg font-bold tracking-tight">WorkHR</span>
 
-          <nav className="ml-6 flex gap-1">
+          <nav className="ml-6 hidden gap-1 md:flex">
             {(["dashboard", "history"] as const).map((t) => (
               <button
                 key={t}
