@@ -80,6 +80,7 @@ function WorkerDirectory() {
         </div>
 
         <DataTable
+          labels={["Photo", "Code", "Name", "Contact", "Location", "Joined", "Expiry", "Status", "Action"]}
           head={
             <>
               <Th>Photo</Th>

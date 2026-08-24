@@ -194,6 +194,7 @@ function AttendancePage() {
           </div>
 
           <DataTable
+            labels={["Worker", "Date", "Check-In", "Check-Out", "Location", "Total Hours", "Source", "Action"]}
             head={
               <>
                 <Th>Worker</Th>

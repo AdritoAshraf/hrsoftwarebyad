@@ -150,6 +150,7 @@ function WorkerDetails() {
             <h2 className="text-base font-semibold">Attendance history ({rows.length})</h2>
           </div>
           <DataTable
+            labels={["Date", "Check In", "Check Out", "Hours", "Location", "Source"]}
             head={
               <>
                 <Th>Date</Th>
@@ -180,6 +181,7 @@ function WorkerDetails() {
             <h2 className="text-base font-semibold">Payroll history ({pays.length})</h2>
           </div>
           <DataTable
+            labels={["Payroll ID", "Period", "Hours", "Gross", "Advance", "Net Pay", "Status"]}
             head={
               <>
                 <Th>Payroll ID</Th>

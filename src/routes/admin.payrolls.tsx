@@ -272,6 +272,7 @@ function PayrollsPage() {
           </div>
 
           <DataTable
+            labels={["Payroll ID", "Worker", "Period", "Hours", "Rate", "Gross Pay", "Advance", "Net Pay", "Status", "Action"]}
             head={
               <>
                 <Th>Payroll ID</Th>

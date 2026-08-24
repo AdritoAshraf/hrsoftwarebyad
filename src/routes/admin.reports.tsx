@@ -81,6 +81,7 @@ function ReportsPage() {
               <h2 className="text-base font-semibold">Weekly Breakdown</h2>
             </div>
             <DataTable
+              labels={["Week", "Hours", "Labour Cost", "Billing", "Profit"]}
               head={
                 <>
                   <Th>Week</Th>
@@ -111,6 +112,7 @@ function ReportsPage() {
               <h2 className="text-base font-semibold">By Location</h2>
             </div>
             <DataTable
+              labels={["Location", "Hours", "Labour Cost", "Billing", "Profit"]}
               head={
                 <>
                   <Th>Location</Th>

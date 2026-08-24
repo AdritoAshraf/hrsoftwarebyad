@@ -156,6 +156,7 @@ function Approvals() {
               <p className="text-xs text-muted-foreground">Click a row to view full bio-data</p>
             </div>
             <DataTable
+              labels={["Application ID", "Applicant", "Applied For", "Submitted", "Status", "Action"]}
               head={
                 <>
                   <Th>Application ID</Th>
@@ -203,6 +204,7 @@ function Approvals() {
               <h2 className="text-base font-semibold">Rejected log ({rejected.length})</h2>
             </div>
             <DataTable
+              labels={["Application ID", "Applicant", "Applied For", "Rejected On", "Status"]}
               head={
                 <>
                   <Th>Application ID</Th>

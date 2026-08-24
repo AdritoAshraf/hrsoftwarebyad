@@ -180,6 +180,7 @@ function WorkerDashboard() {
             </p>
           </div>
           <DataTable
+            labels={["Date", "Location", "Time In", "Time Out", "Total Hours", "Source"]}
             head={
               <>
                 <Th>Date</Th>
