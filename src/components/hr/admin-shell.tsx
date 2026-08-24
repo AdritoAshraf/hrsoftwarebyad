@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -16,6 +16,8 @@ import {
   RefreshCw,
   UserPlus,
   Sparkles,
+  MoreHorizontal,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/mock-data";
@@ -37,9 +39,31 @@ const teamMenu = [
   { to: "/admin/reports", label: "Reports", icon: BarChart3 },
 ] as const;
 
+/* tabs shown in the mobile bottom bar */
+const mobileTabs = [
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin/workers", label: "Workers", icon: Users },
+  { to: "/admin/attendance", label: "Attendance", icon: CalendarCheck },
+  { to: "/admin/payrolls", label: "Payrolls", icon: Wallet },
+  { to: "/admin/reports", label: "Reports", icon: BarChart3 },
+] as const;
+
+const moreMenu = [
+  { to: "/admin/approvals", label: "Registration Approvals", icon: UserCheck },
+  { to: "/admin/notifications", label: "Notifications", icon: Bell },
+  { to: "/admin/locations", label: "Locations", icon: MapPin },
+  { to: "/admin/settings", label: "Settings", icon: Settings },
+  { to: "/admin/help", label: "Help & Center", icon: LifeBuoy },
+  { to: "/", label: "Switch role", icon: RefreshCw },
+] as const;
+
+function isActive(pathname: string, to: string) {
+  return to === "/admin" ? pathname === "/admin" : pathname.startsWith(to);
+}
+
 function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: typeof Users }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const active = to === "/admin" ? pathname === "/admin" : pathname.startsWith(to);
+  const active = isActive(pathname, to);
   return (
     <Link
       to={to}
@@ -56,6 +80,94 @@ function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: t
   );
 }
 
+function MobileNav() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [more, setMore] = useState(false);
+  const moreActive = moreMenu.some((m) => m.to !== "/" && isActive(pathname, m.to));
+
+  return (
+    <>
+      {more && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-foreground/40 backdrop-blur-sm lg:hidden">
+          <button className="flex-1" aria-label="Close menu" onClick={() => setMore(false)} />
+          <div className="card-surface rounded-b-none p-4 pb-6">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold">More</p>
+              <button
+                onClick={() => setMore(false)}
+                aria-label="Close"
+                className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <nav className="flex flex-col gap-1">
+              {moreMenu.map((i) => (
+                <Link
+                  key={i.to}
+                  to={i.to}
+                  onClick={() => setMore(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-3 py-3 text-sm",
+                    i.to !== "/" && isActive(pathname, i.to)
+                      ? "bg-primary-soft font-semibold text-primary"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  <i.icon className="size-4" /> {i.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden">
+        {mobileTabs.map((t) => {
+          const active = isActive(pathname, t.to);
+          return (
+            <Link
+              key={t.to}
+              to={t.to}
+              className={cn(
+                "flex flex-col items-center gap-1 py-2 text-[10px] font-medium",
+                active ? "text-primary" : "text-muted-foreground",
+              )}
+            >
+              <span
+                className={cn(
+                  "grid h-7 w-12 place-items-center rounded-full",
+                  active && "bg-primary-soft",
+                )}
+              >
+                <t.icon className="size-4" />
+              </span>
+              {t.label}
+            </Link>
+          );
+        })}
+        <button
+          onClick={() => setMore(true)}
+          className={cn(
+            "flex flex-col items-center gap-1 py-2 text-[10px] font-medium",
+            more || moreActive ? "text-primary" : "text-muted-foreground",
+          )}
+        >
+          <span
+            className={cn(
+              "grid h-7 w-12 place-items-center rounded-full",
+              (more || moreActive) && "bg-primary-soft",
+            )}
+          >
+            <MoreHorizontal className="size-4" />
+          </span>
+          More
+        </button>
+      </nav>
+    </>
+  );
+}
+
 export function AdminShell({
   title,
   action,
@@ -67,8 +179,10 @@ export function AdminShell({
 }) {
   const { notices, workers } = useHR();
   const urgentCount = notices.filter((n) => n.urgency !== "info").length;
+  const [searchOpen, setSearchOpen] = useState(false);
+
   return (
-    <div className="flex min-h-screen bg-background p-3 gap-3">
+    <div className="flex min-h-screen gap-3 bg-background p-3">
       <aside className="card-surface sticky top-3 hidden h-[calc(100vh-1.5rem)] w-64 shrink-0 flex-col p-4 lg:flex">
         <Link to="/" className="mb-6 flex items-center gap-2.5 px-1">
           <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
@@ -94,11 +208,67 @@ export function AdminShell({
             <NavItem key={i.to} {...i} />
           ))}
         </nav>
-
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="card-surface mb-3 flex flex-wrap items-center gap-3 px-5 py-3">
+        {/* mobile header */}
+        <header className="card-surface mb-3 flex items-center gap-2 px-4 py-3 lg:hidden">
+          {searchOpen ? (
+            <>
+              <div className="relative flex-1">
+                <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
+                <input
+                  autoFocus
+                  placeholder="Search anything..."
+                  className="h-9 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:border-primary"
+                />
+              </div>
+              <button
+                onClick={() => setSearchOpen(false)}
+                aria-label="Close search"
+                className="grid size-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/" className="flex min-w-0 items-center gap-2">
+                <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                  <Sparkles className="size-4" />
+                </span>
+                <span className="truncate text-base font-bold tracking-tight">WorkHR</span>
+              </Link>
+              <button
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="ml-auto grid size-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground"
+              >
+                <Search className="size-4" />
+              </button>
+              <Link
+                to="/admin/notifications"
+                aria-label={`Notifications, ${urgentCount} urgent`}
+                className="relative grid size-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground"
+              >
+                <Bell className="size-4" />
+                {urgentCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 grid min-w-4.5 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold text-primary-foreground">
+                    {urgentCount}
+                  </span>
+                )}
+              </Link>
+              <img
+                src={avatarUrl(workers[0]?.name ?? "Admin")}
+                alt="Profile"
+                className="size-9 shrink-0 rounded-full border border-border bg-secondary"
+              />
+            </>
+          )}
+        </header>
+
+        {/* desktop header */}
+        <header className="card-surface mb-3 hidden flex-wrap items-center gap-3 px-5 py-3 lg:flex">
           <h1 className="mr-auto text-lg font-semibold tracking-tight">{title}</h1>
 
           <div className="relative hidden md:block">
@@ -151,8 +321,19 @@ export function AdminShell({
           )}
         </header>
 
-        <main className="pb-6">{children}</main>
+        <h1 className="mb-3 px-1 text-xl font-semibold tracking-tight lg:hidden">{title}</h1>
+
+        <main className="pb-28 lg:pb-6">{children}</main>
       </div>
+
+      {/* mobile primary action as a floating button */}
+      {action && (
+        <div className="fixed right-4 bottom-20 z-40 [&_button]:h-12 [&_button]:rounded-full [&_button]:px-5 [&_button]:shadow-lg lg:hidden">
+          {action}
+        </div>
+      )}
+
+      <MobileNav />
     </div>
   );
 }
