@@ -100,7 +100,7 @@ function PayrollsPage() {
                 <Td>{p.hours} h</Td>
                 <Td>{money2(p.rate)}</Td>
                 <Td>{money2(gross(p))}</Td>
-                <Td className="text-danger">-{money2(p.advance)}</Td>
+                <Td className={p.advance ? "text-danger" : "text-muted-foreground"}>{p.advance ? `-${money2(p.advance)}` : "—"}</Td>
                 <Td className="font-semibold">{money2(net(p))}</Td>
                 <Td><StatusBadge status={p.status} /></Td>
                 <Td>
