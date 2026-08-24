@@ -177,9 +177,22 @@ export function AdminShell({
   action?: ReactNode;
   children: ReactNode;
 }) {
-  const { notices, workers } = useHR();
+  const { notices, workers, settings, totals } = useHR();
+  const router = useRouter();
   const urgentCount = notices.filter((n) => n.urgency !== "info").length;
   const [searchOpen, setSearchOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refresh = () => {
+    setRefreshing(true);
+    void router.invalidate();
+    setTimeout(() => {
+      setRefreshing(false);
+      toast.success("Data refreshed", {
+        description: `${totals.activeWorkers} active workers · ${urgentCount} urgent alerts`,
+      });
+    }, 600);
+  };
 
   return (
     <div className="flex min-h-screen gap-3 bg-background p-3">
