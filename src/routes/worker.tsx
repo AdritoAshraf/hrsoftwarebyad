@@ -97,7 +97,7 @@ function WorkerDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl space-y-3 px-5 py-6">
+      <main className="mx-auto max-w-4xl space-y-3 px-4 py-5 pb-28 md:px-5 md:py-6 md:pb-6">
         {tab === "dashboard" && (
           <Card className="p-8 text-center">
             <img src={avatarUrl(me.name)} alt={me.name} className="mx-auto size-16 rounded-full bg-secondary" />
