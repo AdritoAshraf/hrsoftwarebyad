@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, MapPin, LogIn, LogOut, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Sparkles, MapPin, LogIn, LogOut, CheckCircle2, ArrowLeft, CalendarCheck } from "lucide-react";
 import { Card, DataTable, EmptyRow, StatusBadge, Td, Th } from "@/components/hr/bits";
 import { avatarUrl } from "@/lib/mock-data";
 import { useHR } from "@/lib/hr-store";
@@ -99,7 +99,7 @@ function WorkerDashboard() {
 
       <main className="mx-auto max-w-4xl space-y-3 px-4 py-5 pb-28 md:px-5 md:py-6 md:pb-6">
         {tab === "dashboard" && (
-          <Card className="p-8 text-center">
+          <Card className="p-6 text-center md:p-8">
             <img src={avatarUrl(me.name)} alt={me.name} className="mx-auto size-16 rounded-full bg-secondary" />
             <h1 className="mt-4 text-2xl font-bold tracking-tight">Good Morning, {me.name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -172,7 +172,7 @@ function WorkerDashboard() {
           </Card>
         )}
 
-        <Card className="p-0">
+        <Card className={tab === "dashboard" ? "p-0 max-md:hidden" : "p-0"}>
           <div className="p-5">
             <h2 className="text-base font-semibold">My Attendance History</h2>
             <p className="text-sm text-muted-foreground">
@@ -206,6 +206,27 @@ function WorkerDashboard() {
           </DataTable>
         </Card>
       </main>
+
+      {/* mobile bottom navigation */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden">
+        {([
+          { key: "dashboard", label: "Dashboard", Icon: LogIn },
+          { key: "history", label: "Attendance", Icon: CalendarCheck },
+        ] as const).map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`flex flex-col items-center gap-1 py-2 text-[10px] font-medium ${
+              tab === key ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <span className={`grid h-7 w-14 place-items-center rounded-full ${tab === key ? "bg-primary-soft" : ""}`}>
+              <Icon className="size-4" />
+            </span>
+            {label}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
