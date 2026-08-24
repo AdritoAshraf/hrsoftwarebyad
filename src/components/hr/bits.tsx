@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useId } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/mock-data";
