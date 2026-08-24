@@ -13,7 +13,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { payrollChart, billingChart, money } from "@/lib/mock-data";
+import { money } from "@/lib/hr-utils";
 
 const axis = {
   stroke: "transparent",
@@ -27,28 +27,34 @@ const tooltipStyle = {
   fontSize: 12,
 } as const;
 
-export function PayrollBarChart() {
+export function PayrollBarChart({
+  data,
+}: {
+  data: { month: string; cost: number; expense: number }[];
+}) {
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={payrollChart} barGap={-18} barCategoryGap={28}>
+      <BarChart data={data} barGap={-18} barCategoryGap={28}>
         <CartesianGrid vertical={false} stroke="oklch(0.93 0.006 285)" />
         <XAxis dataKey="month" axisLine={false} tickLine={false} {...axis} />
         <YAxis
           axisLine={false}
           tickLine={false}
           {...axis}
-          tickFormatter={(v: number) => `${v / 1000}k`}
+          tickFormatter={(v: number) => (v >= 1000 ? `${v / 1000}k` : String(v))}
         />
         <Tooltip
           cursor={{ fill: "oklch(0.55 0.23 291 / 0.06)" }}
           contentStyle={tooltipStyle}
-          formatter={(v: number, n: string) => [money(v), n === "cost" ? "Cost" : "Expense"]}
+          formatter={(v: number, n: string) => [money(v), n === "cost" ? "Gross pay" : "Deductions"]}
         />
         <Legend
           iconType="circle"
           iconSize={8}
           formatter={(v: string) => (
-            <span className="text-xs text-muted-foreground">{v === "cost" ? "Cost" : "Expense"}</span>
+            <span className="text-xs text-muted-foreground">
+              {v === "cost" ? "Gross pay" : "Deductions"}
+            </span>
           )}
         />
         <Bar dataKey="cost" fill="oklch(0.55 0.23 291)" radius={[6, 6, 6, 6]} barSize={22} />
@@ -58,7 +64,7 @@ export function PayrollBarChart() {
   );
 }
 
-const donutColors = ["oklch(0.55 0.23 291)", "oklch(0.72 0.12 195)", "oklch(0.84 0.08 291)"];
+export const donutColors = ["oklch(0.55 0.23 291)", "oklch(0.72 0.12 195)", "oklch(0.84 0.08 291)"];
 
 export function DonutChart({
   data,
@@ -69,12 +75,13 @@ export function DonutChart({
   total: string;
   label: string;
 }) {
+  const empty = data.every((d) => !d.value);
   return (
     <div className="relative">
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie
-            data={data}
+            data={empty ? [{ name: "None", value: 1 }] : data}
             dataKey="value"
             innerRadius={68}
             outerRadius={92}
@@ -82,11 +89,11 @@ export function DonutChart({
             cornerRadius={8}
             stroke="none"
           >
-            {data.map((_, i) => (
-              <Cell key={i} fill={donutColors[i % donutColors.length]} />
+            {(empty ? [0] : data).map((_, i) => (
+              <Cell key={i} fill={empty ? "oklch(0.92 0.008 285)" : donutColors[i % donutColors.length]} />
             ))}
           </Pie>
-          <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => money(v)} />
+          {!empty && <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => money(v)} />}
         </PieChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 grid place-items-center">
@@ -99,17 +106,21 @@ export function DonutChart({
   );
 }
 
-export function BillingLineChart() {
+export function BillingLineChart({
+  data,
+}: {
+  data: { week: string; cost: number; billing: number }[];
+}) {
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <LineChart data={billingChart}>
+      <LineChart data={data}>
         <CartesianGrid vertical={false} stroke="oklch(0.93 0.006 285)" />
         <XAxis dataKey="week" axisLine={false} tickLine={false} {...axis} />
         <YAxis
           axisLine={false}
           tickLine={false}
           {...axis}
-          tickFormatter={(v: number) => `${v / 1000}k`}
+          tickFormatter={(v: number) => (v >= 1000 ? `${v / 1000}k` : String(v))}
         />
         <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => money(v)} />
         <Legend iconType="circle" iconSize={8} />

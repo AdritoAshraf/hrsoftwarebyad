@@ -1,45 +1,77 @@
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, Download, ChevronDown, MoreVertical, Eye } from "lucide-react";
+import { Search, Download, RotateCcw, Trash2 } from "lucide-react";
 import { AdminShell } from "@/components/hr/admin-shell";
-import { Card, DataTable, Person, StatusBadge, Td, Th } from "@/components/hr/bits";
-import { workers } from "@/lib/mock-data";
+import { Card, DataTable, EmptyRow, Person, StatusBadge, Td, Th } from "@/components/hr/bits";
+import { useHR } from "@/lib/hr-store";
+import { fmtDate, daysUntil } from "@/lib/hr-utils";
 
 export const Route = createFileRoute("/admin/workers")({
   head: () => ({
     meta: [
       { title: "Worker Directory — WorkHR" },
-      { name: "description", content: "Browse every worker with contact details, location, joining date and status." },
+      { name: "description", content: "Browse every worker with contact details, location, joining date and live contract status." },
       { property: "og:title", content: "Worker Directory — WorkHR" },
-      { property: "og:description", content: "Browse every worker with contact details, location, joining date and status." },
+      { property: "og:description", content: "Browse every worker with contact details, location, joining date and live contract status." },
     ],
   }),
   component: WorkerDirectory,
 });
 
-function Filter({ label }: { label: string }) {
-  return (
-    <button className="flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm text-muted-foreground">
-      {label} <ChevronDown className="size-4" />
-    </button>
-  );
-}
+const selectCls =
+  "h-9 rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-primary";
 
 function WorkerDirectory() {
+  const { workers, locations, workerStatus, reactivateWorker, deleteWorker } = useHR();
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("all");
+  const [loc, setLoc] = useState("all");
+
+  const rows = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return workers.filter((w) => {
+      const s = workerStatus(w);
+      if (status !== "all" && s !== status) return false;
+      if (loc !== "all" && w.location !== loc) return false;
+      if (!term) return true;
+      return [w.name, w.id, w.email, w.phone, w.role, w.location].some((v) =>
+        v.toLowerCase().includes(term),
+      );
+    });
+  }, [workers, q, status, loc, workerStatus]);
+
   return (
     <AdminShell title="Worker Directory">
       <Card className="p-0">
         <div className="flex flex-wrap items-center gap-3 p-5">
-          <h2 className="mr-auto text-base font-semibold">All Workers ({workers.length})</h2>
+          <h2 className="mr-auto text-base font-semibold">
+            All Workers ({rows.length}
+            {rows.length !== workers.length ? ` of ${workers.length}` : ""})
+          </h2>
           <div className="relative">
             <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
             <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
               placeholder="Search worker"
               className="h-9 w-56 rounded-lg border border-border bg-card pl-9 text-sm outline-none focus:border-primary"
             />
           </div>
-          <Filter label="All Status" />
-          <Filter label="All Locations" />
-          <Filter label="Joining Month" />
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectCls}>
+            <option value="all">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Expiring Soon">Expiring Soon</option>
+            <option value="Expired">Expired</option>
+            <option value="On Leave">On Leave</option>
+          </select>
+          <select value={loc} onChange={(e) => setLoc(e.target.value)} className={selectCls}>
+            <option value="all">All Locations</option>
+            {locations.map((l) => (
+              <option key={l.id} value={l.name}>
+                {l.name}
+              </option>
+            ))}
+          </select>
           <button className="flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm">
             <Download className="size-4" /> Export
           </button>
@@ -53,32 +85,61 @@ function WorkerDirectory() {
               <Th>Phone / Email</Th>
               <Th>Location</Th>
               <Th>Joining Date</Th>
+              <Th>Expiry</Th>
               <Th>Status</Th>
               <Th className="text-right">Action</Th>
             </>
           }
         >
-          {workers.map((w) => (
-            <tr key={w.id} className="hover:bg-secondary/40">
-              <Td className="font-medium">{w.id}</Td>
-              <Td><Person name={w.name} sub={w.role} /></Td>
-              <Td>
-                <div className="leading-tight">
-                  <p>{w.phone}</p>
-                  <p className="text-xs text-muted-foreground">{w.email}</p>
-                </div>
-              </Td>
-              <Td>{w.location}</Td>
-              <Td>{w.joined}</Td>
-              <Td><StatusBadge status={w.status} /></Td>
-              <Td>
-                <div className="flex justify-end gap-1 text-muted-foreground">
-                  <button className="rounded-md p-1.5 hover:bg-secondary"><Eye className="size-4" /></button>
-                  <button className="rounded-md p-1.5 hover:bg-secondary"><MoreVertical className="size-4" /></button>
-                </div>
-              </Td>
-            </tr>
-          ))}
+          {rows.length === 0 && <EmptyRow colSpan={8} text="No workers match these filters." />}
+          {rows.map((w) => {
+            const left = daysUntil(w.expiry);
+            return (
+              <tr key={w.id} className="hover:bg-secondary/40">
+                <Td className="font-medium">{w.id}</Td>
+                <Td>
+                  <Person name={w.name} sub={w.role} />
+                </Td>
+                <Td>
+                  <div className="leading-tight">
+                    <p>{w.phone}</p>
+                    <p className="text-xs text-muted-foreground">{w.email}</p>
+                  </div>
+                </Td>
+                <Td>{w.location}</Td>
+                <Td>{fmtDate(w.joined)}</Td>
+                <Td>
+                  <div className="leading-tight">
+                    <p>{fmtDate(w.expiry)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {left < 0 ? `${Math.abs(left)}d overdue` : `${left}d left`}
+                    </p>
+                  </div>
+                </Td>
+                <Td>
+                  <StatusBadge status={workerStatus(w)} />
+                </Td>
+                <Td>
+                  <div className="flex justify-end gap-1 text-muted-foreground">
+                    <button
+                      title="Reactivate for 3 months"
+                      onClick={() => reactivateWorker(w.id)}
+                      className="rounded-md p-1.5 hover:bg-secondary hover:text-primary"
+                    >
+                      <RotateCcw className="size-4" />
+                    </button>
+                    <button
+                      title="Remove worker"
+                      onClick={() => deleteWorker(w.id)}
+                      className="rounded-md p-1.5 hover:bg-secondary hover:text-danger"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
+                </Td>
+              </tr>
+            );
+          })}
         </DataTable>
       </Card>
     </AdminShell>

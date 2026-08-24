@@ -1,9 +1,13 @@
-export type Status = "Active" | "Expired" | "On Leave" | "Completed" | "Pending" | "Rejected";
+import { addDays, todayISO, toISO, money, money2 } from "./hr-utils";
+
+export { money, money2 };
 
 export const admin = { name: "Turja Sen", role: "HR Administrator" };
 
 export const avatarUrl = (seed: string) =>
   `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(seed)}&backgroundColor=ede9fe,ddd6fe,cffafe,fef3c7`;
+
+export type WorkerStatus = "Active" | "Expiring Soon" | "Expired" | "On Leave";
 
 export type Worker = {
   id: string;
@@ -11,46 +15,65 @@ export type Worker = {
   phone: string;
   email: string;
   location: string;
-  joined: string;
-  status: Extract<Status, "Active" | "Expired" | "On Leave">;
+  joined: string; // ISO
+  expiry: string; // ISO
+  onLeave?: boolean;
   role: string;
   rate: number;
-  probationEndsIn: number; // days
 };
 
-export const workers: Worker[] = [
-  { id: "WRK-10241", name: "Hazel Nutt", phone: "+44 7700 900123", email: "hazel.n@mail.com", location: "Camden Site", joined: "12 Jan 2024", status: "Active", role: "Site Operative", rate: 14.5, probationEndsIn: 210 },
-  { id: "WRK-10242", name: "Simon Cyrene", phone: "+44 7700 900456", email: "simon.c@mail.com", location: "Hackney Depot", joined: "03 Feb 2024", status: "Active", role: "Forklift Driver", rate: 16.0, probationEndsIn: 30 },
-  { id: "WRK-10243", name: "Aida Bugg", phone: "+44 7700 900789", email: "aida.b@mail.com", location: "Stratford Yard", joined: "21 Feb 2024", status: "On Leave", role: "Packer", rate: 12.75, probationEndsIn: 7 },
-  { id: "WRK-10244", name: "Peg Legge", phone: "+44 7700 900222", email: "peg.l@mail.com", location: "Camden Site", joined: "09 Mar 2024", status: "Active", role: "Warehouse Assistant", rate: 13.2, probationEndsIn: 88 },
-  { id: "WRK-10245", name: "Marcus Ohms", phone: "+44 7700 900333", email: "marcus.o@mail.com", location: "Croydon Hub", joined: "18 Mar 2024", status: "Expired", role: "Cleaner", rate: 11.9, probationEndsIn: 0 },
-  { id: "WRK-10246", name: "Nadia Karim", phone: "+44 7700 900444", email: "nadia.k@mail.com", location: "Hackney Depot", joined: "02 Apr 2024", status: "Active", role: "Team Lead", rate: 19.5, probationEndsIn: 7 },
-  { id: "WRK-10247", name: "Owen Blake", phone: "+44 7700 900555", email: "owen.b@mail.com", location: "Stratford Yard", joined: "27 Apr 2024", status: "Active", role: "Site Operative", rate: 14.5, probationEndsIn: 30 },
-  { id: "WRK-10248", name: "Priya Anand", phone: "+44 7700 900666", email: "priya.a@mail.com", location: "Croydon Hub", joined: "14 May 2024", status: "Active", role: "Quality Checker", rate: 15.25, probationEndsIn: 120 },
+/** expiry = today + daysLeft, joined = expiry - 90 days */
+const seedWorker = (
+  id: string,
+  name: string,
+  phone: string,
+  email: string,
+  location: string,
+  role: string,
+  rate: number,
+  daysLeft: number,
+  onLeave = false,
+): Worker => {
+  const expiry = addDays(todayISO(), daysLeft);
+  return { id, name, phone, email, location, role, rate, expiry, joined: addDays(expiry, -90), onLeave };
+};
+
+export const seedWorkers: Worker[] = [
+  seedWorker("WRK-10241", "Hazel Nutt", "+44 7700 900123", "hazel.n@mail.com", "Camden Site", "Site Operative", 14.5, 62),
+  seedWorker("WRK-10242", "Simon Cyrene", "+44 7700 900456", "simon.c@mail.com", "Hackney Depot", "Forklift Driver", 16, 24),
+  seedWorker("WRK-10243", "Aida Bugg", "+44 7700 900789", "aida.b@mail.com", "Stratford Yard", "Packer", 12.75, 5, true),
+  seedWorker("WRK-10244", "Peg Legge", "+44 7700 900222", "peg.l@mail.com", "Camden Site", "Warehouse Assistant", 13.2, 71),
+  seedWorker("WRK-10245", "Marcus Ohms", "+44 7700 900333", "marcus.o@mail.com", "Croydon Hub", "Cleaner", 11.9, -4),
+  seedWorker("WRK-10246", "Nadia Karim", "+44 7700 900444", "nadia.k@mail.com", "Hackney Depot", "Team Lead", 19.5, 6),
+  seedWorker("WRK-10247", "Owen Blake", "+44 7700 900555", "owen.b@mail.com", "Stratford Yard", "Site Operative", 14.5, 21),
+  seedWorker("WRK-10248", "Priya Anand", "+44 7700 900666", "priya.a@mail.com", "Croydon Hub", "Quality Checker", 15.25, 84),
 ];
 
 export type Application = {
   id: string;
   name: string;
-  submitted: string;
+  submitted: string; // ISO
   phone: string;
   email: string;
   address: string;
   nid: string;
   appliedFor: string;
+  location: string;
+  rate: number;
 };
 
-export const applications: Application[] = [
-  { id: "APP-3301", name: "Colin Sample", submitted: "18 Aug 2026", phone: "+44 7700 901111", email: "colin.s@mail.com", address: "42 Fenwick Road, London E15 3QD", nid: "NID-8823-4491", appliedFor: "Site Operative" },
-  { id: "APP-3302", name: "Rita Book", submitted: "19 Aug 2026", phone: "+44 7700 902222", email: "rita.b@mail.com", address: "17 Marlow Street, London SE1 6BQ", nid: "NID-1187-2093", appliedFor: "Packer" },
-  { id: "APP-3303", name: "Tim Burr", submitted: "20 Aug 2026", phone: "+44 7700 903333", email: "tim.b@mail.com", address: "9 Bramley Close, Croydon CR0 2LX", nid: "NID-7741-0038", appliedFor: "Forklift Driver" },
-  { id: "APP-3304", name: "Sana Chowdhury", submitted: "22 Aug 2026", phone: "+44 7700 904444", email: "sana.c@mail.com", address: "88 Kingsland Road, London E2 8AA", nid: "NID-5520-7712", appliedFor: "Quality Checker" },
+export const seedApplications: Application[] = [
+  { id: "APP-3301", name: "Colin Sample", submitted: addDays(todayISO(), -6), phone: "+44 7700 901111", email: "colin.s@mail.com", address: "42 Fenwick Road, London E15 3QD", nid: "NID-8823-4491", appliedFor: "Site Operative", location: "Camden Site", rate: 14.5 },
+  { id: "APP-3302", name: "Rita Book", submitted: addDays(todayISO(), -5), phone: "+44 7700 902222", email: "rita.b@mail.com", address: "17 Marlow Street, London SE1 6BQ", nid: "NID-1187-2093", appliedFor: "Packer", location: "Hackney Depot", rate: 12.75 },
+  { id: "APP-3303", name: "Tim Burr", submitted: addDays(todayISO(), -4), phone: "+44 7700 903333", email: "tim.b@mail.com", address: "9 Bramley Close, Croydon CR0 2LX", nid: "NID-7741-0038", appliedFor: "Forklift Driver", location: "Croydon Hub", rate: 16 },
+  { id: "APP-3304", name: "Sana Chowdhury", submitted: addDays(todayISO(), -2), phone: "+44 7700 904444", email: "sana.c@mail.com", address: "88 Kingsland Road, London E2 8AA", nid: "NID-5520-7712", appliedFor: "Quality Checker", location: "Stratford Yard", rate: 15.25 },
 ];
 
 export type Attendance = {
   id: string;
+  workerId: string;
   worker: string;
-  date: string;
+  date: string; // ISO
   in: string;
   out: string;
   location: string;
@@ -58,96 +81,139 @@ export type Attendance = {
   source: "Self" | "Admin";
 };
 
-export const attendance: Attendance[] = [
-  { id: "ATT-9001", worker: "Hazel Nutt", date: "22 Aug 2026", in: "08:02", out: "17:04", location: "Camden Site", hours: 9.0, source: "Self" },
-  { id: "ATT-9002", worker: "Simon Cyrene", date: "22 Aug 2026", in: "07:55", out: "16:30", location: "Hackney Depot", hours: 8.6, source: "Self" },
-  { id: "ATT-9003", worker: "Peg Legge", date: "22 Aug 2026", in: "09:10", out: "18:00", location: "Camden Site", hours: 8.8, source: "Admin" },
-  { id: "ATT-9004", worker: "Nadia Karim", date: "21 Aug 2026", in: "08:00", out: "17:30", location: "Hackney Depot", hours: 9.5, source: "Self" },
-  { id: "ATT-9005", worker: "Owen Blake", date: "21 Aug 2026", in: "08:15", out: "16:45", location: "Stratford Yard", hours: 8.5, source: "Admin" },
-  { id: "ATT-9006", worker: "Priya Anand", date: "21 Aug 2026", in: "07:45", out: "16:15", location: "Croydon Hub", hours: 8.5, source: "Self" },
-  { id: "ATT-9007", worker: "Aida Bugg", date: "20 Aug 2026", in: "08:30", out: "17:00", location: "Stratford Yard", hours: 8.5, source: "Self" },
+const att = (
+  id: string,
+  workerId: string,
+  worker: string,
+  back: number,
+  tin: string,
+  tout: string,
+  location: string,
+  hours: number,
+  source: "Self" | "Admin",
+): Attendance => ({ id, workerId, worker, date: addDays(todayISO(), -back), in: tin, out: tout, location, hours, source });
+
+export const seedAttendance: Attendance[] = [
+  att("ATT-9001", "WRK-10241", "Hazel Nutt", 1, "08:02", "17:04", "Camden Site", 9.03, "Self"),
+  att("ATT-9002", "WRK-10242", "Simon Cyrene", 1, "07:55", "16:30", "Hackney Depot", 8.58, "Self"),
+  att("ATT-9003", "WRK-10244", "Peg Legge", 1, "09:10", "18:00", "Camden Site", 8.83, "Admin"),
+  att("ATT-9004", "WRK-10246", "Nadia Karim", 2, "08:00", "17:30", "Hackney Depot", 9.5, "Self"),
+  att("ATT-9005", "WRK-10247", "Owen Blake", 2, "08:15", "16:45", "Stratford Yard", 8.5, "Admin"),
+  att("ATT-9006", "WRK-10248", "Priya Anand", 2, "07:45", "16:15", "Croydon Hub", 8.5, "Self"),
+  att("ATT-9007", "WRK-10243", "Aida Bugg", 3, "08:30", "17:00", "Stratford Yard", 8.5, "Self"),
+  att("ATT-9008", "WRK-10241", "Hazel Nutt", 3, "08:00", "16:45", "Camden Site", 8.75, "Self"),
+  att("ATT-9009", "WRK-10241", "Hazel Nutt", 4, "07:58", "17:10", "Hackney Depot", 9.2, "Self"),
+  att("ATT-9010", "WRK-10242", "Simon Cyrene", 4, "08:05", "17:00", "Hackney Depot", 8.92, "Admin"),
+  att("ATT-9011", "WRK-10241", "Hazel Nutt", 7, "08:20", "16:30", "Camden Site", 8.17, "Self"),
+  att("ATT-9012", "WRK-10244", "Peg Legge", 8, "08:00", "17:00", "Camden Site", 9, "Self"),
+  att("ATT-9013", "WRK-10246", "Nadia Karim", 9, "08:10", "17:20", "Hackney Depot", 9.17, "Self"),
+  att("ATT-9014", "WRK-10248", "Priya Anand", 10, "07:50", "16:20", "Croydon Hub", 8.5, "Self"),
 ];
 
 export type Payroll = {
   id: string;
+  workerId: string;
   worker: string;
+  from: string; // ISO
+  to: string; // ISO
   hours: number;
   rate: number;
+  gross: number;
   advance: number;
+  tax: number;
+  net: number;
   status: "Completed" | "Pending";
-  date: string;
+  created: string; // ISO
 };
 
-export const payrolls: Payroll[] = [
-  { id: "PYRL-12024", worker: "Hazel Nutt", hours: 168, rate: 14.5, advance: 200, status: "Completed", date: "21 Aug 2026 - 05:05 pm" },
-  { id: "PYRL-12025", worker: "Simon Cyrene", hours: 172, rate: 16.0, advance: 100, status: "Completed", date: "21 Aug 2026 - 05:03 pm" },
-  { id: "PYRL-12026", worker: "Aida Bugg", hours: 140, rate: 12.75, advance: 350, status: "Pending", date: "21 Aug 2026 - 05:01 pm" },
-  { id: "PYRL-12027", worker: "Peg Legge", hours: 160, rate: 13.2, advance: 0, status: "Pending", date: "21 Aug 2026 - 05:00 pm" },
-  { id: "PYRL-12028", worker: "Nadia Karim", hours: 176, rate: 19.5, advance: 500, status: "Completed", date: "20 Aug 2026 - 04:52 pm" },
-  { id: "PYRL-12029", worker: "Owen Blake", hours: 152, rate: 14.5, advance: 120, status: "Completed", date: "20 Aug 2026 - 04:41 pm" },
-  { id: "PYRL-12030", worker: "Priya Anand", hours: 164, rate: 15.25, advance: 0, status: "Pending", date: "20 Aug 2026 - 04:30 pm" },
+const mkSeed = (
+  id: string,
+  workerId: string,
+  worker: string,
+  hours: number,
+  rate: number,
+  advance: number,
+  status: "Completed" | "Pending",
+  back: number,
+): Payroll => {
+  const gross = Math.round(hours * rate * 100) / 100;
+  const tax = Math.round(gross * 0.32 * 100) / 100;
+  return {
+    id,
+    workerId,
+    worker,
+    hours,
+    rate,
+    advance,
+    gross,
+    tax,
+    net: Math.round((gross - tax - advance) * 100) / 100,
+    status,
+    from: addDays(todayISO(), -back - 30),
+    to: addDays(todayISO(), -back),
+    created: addDays(todayISO(), -back),
+  };
+};
+
+export const seedPayrolls: Payroll[] = [
+  mkSeed("PYRL-12024", "WRK-10241", "Hazel Nutt", 168, 14.5, 200, "Completed", 2),
+  mkSeed("PYRL-12025", "WRK-10242", "Simon Cyrene", 172, 16, 100, "Completed", 2),
+  mkSeed("PYRL-12026", "WRK-10243", "Aida Bugg", 140, 12.75, 350, "Pending", 3),
+  mkSeed("PYRL-12027", "WRK-10244", "Peg Legge", 160, 13.2, 0, "Pending", 3),
+  mkSeed("PYRL-12028", "WRK-10246", "Nadia Karim", 176, 19.5, 500, "Completed", 4),
+  mkSeed("PYRL-12029", "WRK-10247", "Owen Blake", 152, 14.5, 120, "Completed", 5),
+  mkSeed("PYRL-12030", "WRK-10248", "Priya Anand", 164, 15.25, 0, "Pending", 6),
 ];
 
-export const gross = (p: Payroll) => p.hours * p.rate;
-export const net = (p: Payroll) => gross(p) - p.advance;
+export type LocationItem = { id: string; name: string; address: string };
 
-export const payrollChart = [
-  { month: "Mar", cost: 8200, expense: 2100 },
-  { month: "Apr", cost: 9400, expense: 2400 },
-  { month: "May", cost: 11200, expense: 2650 },
-  { month: "Jun", cost: 10100, expense: 2300 },
-  { month: "Jul", cost: 12500, expense: 2560 },
-  { month: "Aug", cost: 9800, expense: 2200 },
-  { month: "Sep", cost: 10800, expense: 2450 },
-  { month: "Oct", cost: 11600, expense: 2700 },
-  { month: "Nov", cost: 12100, expense: 2900 },
+export const seedLocations: LocationItem[] = [
+  { id: "LOC-01", name: "Camden Site", address: "24 Camden High St, London NW1 0JH" },
+  { id: "LOC-02", name: "Hackney Depot", address: "112 Morning Lane, London E9 6LH" },
+  { id: "LOC-03", name: "Stratford Yard", address: "3 Angel Lane, London E15 1DF" },
+  { id: "LOC-04", name: "Croydon Hub", address: "60 George St, Croydon CR0 1PB" },
 ];
 
-export const deductions = [
-  { name: "Advances", value: 5100 },
-  { name: "Tax & NI", value: 3200 },
-  { name: "Other", value: 2200 },
+export type Notice = {
+  id: string;
+  worker: string;
+  workerId?: string;
+  message: string;
+  urgency: "critical" | "warning" | "info";
+  when: string;
+};
+
+export const seedActivity: Notice[] = [
+  { id: "N-A1", worker: "Priya Anand", message: "Documents verified and archived", urgency: "info", when: "2 days ago" },
+  { id: "N-A2", worker: "Peg Legge", message: "Attendance edited by admin", urgency: "info", when: "3 days ago" },
 ];
 
-export const billingChart = [
-  { week: "W1", cost: 4200, billing: 6100 },
-  { week: "W2", cost: 4600, billing: 6800 },
-  { week: "W3", cost: 5100, billing: 7000 },
-  { week: "W4", cost: 4800, billing: 7400 },
-  { week: "W5", cost: 5300, billing: 7900 },
-  { week: "W6", cost: 5000, billing: 7200 },
-];
+export type Settings = {
+  hourlyRate: number;
+  overtimeMultiplier: number;
+  taxRate: number;
+  niRate: number;
+  pensionRate: number;
+  maxAdvance: number;
+  firstReminderDays: number;
+  finalReminderDays: number;
+  companyName: string;
+  payrollEmail: string;
+  billingMultiplier: number;
+};
 
-export type LocationItem = { id: string; name: string; address: string; workers: number };
+export const seedSettings: Settings = {
+  hourlyRate: 14.5,
+  overtimeMultiplier: 1.5,
+  taxRate: 20,
+  niRate: 12,
+  pensionRate: 5,
+  maxAdvance: 500,
+  firstReminderDays: 30,
+  finalReminderDays: 7,
+  companyName: "WorkHR Staffing Ltd",
+  payrollEmail: "payroll@workhr.co.uk",
+  billingMultiplier: 1.45,
+};
 
-export const locations: LocationItem[] = [
-  { id: "LOC-01", name: "Camden Site", address: "24 Camden High St, London NW1 0JH", workers: 18 },
-  { id: "LOC-02", name: "Hackney Depot", address: "112 Morning Lane, London E9 6LH", workers: 24 },
-  { id: "LOC-03", name: "Stratford Yard", address: "3 Angel Lane, London E15 1DF", workers: 12 },
-  { id: "LOC-04", name: "Croydon Hub", address: "60 George St, Croydon CR0 1PB", workers: 9 },
-];
-
-export type Notice = { id: string; worker: string; message: string; urgency: "critical" | "warning" | "info"; when: string };
-
-export const notifications: Notice[] = [
-  { id: "N-1", worker: "Aida Bugg", message: "Probation period expires in 7 days", urgency: "critical", when: "2 hours ago" },
-  { id: "N-2", worker: "Nadia Karim", message: "Probation period expires in 7 days", urgency: "critical", when: "5 hours ago" },
-  { id: "N-3", worker: "Simon Cyrene", message: "Probation period expires in 1 month", urgency: "warning", when: "Yesterday" },
-  { id: "N-4", worker: "Owen Blake", message: "Probation period expires in 1 month", urgency: "warning", when: "Yesterday" },
-  { id: "N-5", worker: "Priya Anand", message: "Documents verified and archived", urgency: "info", when: "2 days ago" },
-  { id: "N-6", worker: "Peg Legge", message: "Attendance edited by admin for 20 Aug", urgency: "info", when: "3 days ago" },
-];
-
-export const workerHistory = [
-  { date: "22 Aug 2026", location: "Camden Site", in: "08:02", out: "17:04", hours: 9.0 },
-  { date: "21 Aug 2026", location: "Camden Site", in: "08:00", out: "16:45", hours: 8.75 },
-  { date: "20 Aug 2026", location: "Hackney Depot", in: "07:58", out: "17:10", hours: 9.2 },
-  { date: "19 Aug 2026", location: "Camden Site", in: "08:20", out: "16:30", hours: 8.1 },
-  { date: "18 Aug 2026", location: "Stratford Yard", in: "08:05", out: "17:00", hours: 8.9 },
-];
-
-export const money = (n: number) =>
-  n.toLocaleString("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
-
-export const money2 = (n: number) =>
-  n.toLocaleString("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export const seedToday = toISO(new Date());
