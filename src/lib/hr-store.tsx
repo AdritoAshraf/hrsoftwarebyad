@@ -51,6 +51,8 @@ function useHRState() {
   const [activity, setActivity] = useState<Notice[]>(seedActivity);
   const [settings, setSettings] = useState<Settings>(seedSettings);
   const [openShifts, setOpenShifts] = useState<OpenShift[]>([]);
+  const [buyerIncome, setBuyerIncome] = useState<BuyerIncome[]>(seedBuyerIncome);
+  const [otherCosts, setOtherCosts] = useState<OtherCost[]>(seedOtherCosts);
   const [currentWorkerId, setCurrentWorkerId] = useState<string>(seedWorkers[0]!.id);
 
   const logActivity = (worker: string, message: string) =>
