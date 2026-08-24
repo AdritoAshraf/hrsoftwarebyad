@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, MapPin, LogIn, LogOut, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Sparkles, MapPin, LogIn, LogOut, CheckCircle2, ArrowLeft, CalendarCheck } from "lucide-react";
 import { Card, DataTable, EmptyRow, StatusBadge, Td, Th } from "@/components/hr/bits";
 import { avatarUrl } from "@/lib/mock-data";
 import { useHR } from "@/lib/hr-store";
@@ -56,13 +56,13 @@ function WorkerDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-5 py-4">
-          <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
+        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3 md:flex-wrap md:px-5 md:py-4">
+          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
             <Sparkles className="size-4" />
           </span>
           <span className="text-lg font-bold tracking-tight">WorkHR</span>
 
-          <nav className="ml-6 flex gap-1">
+          <nav className="ml-6 hidden gap-1 md:flex">
             {(["dashboard", "history"] as const).map((t) => (
               <button
                 key={t}
@@ -76,11 +76,11 @@ function WorkerDashboard() {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex min-w-0 items-center gap-3">
             <select
               value={me.id}
               onChange={(e) => setCurrentWorkerId(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-card px-2 text-sm outline-none focus:border-primary"
+              className="h-9 max-w-32 rounded-lg border border-border bg-card px-2 text-sm outline-none focus:border-primary"
               aria-label="Signed in as"
             >
               {workers.map((w) => (
@@ -89,7 +89,7 @@ function WorkerDashboard() {
                 </option>
               ))}
             </select>
-            <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+            <Link to="/" className="hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground md:flex">
               <ArrowLeft className="size-4" /> Switch role
             </Link>
             <img src={avatarUrl(me.name)} alt={me.name} className="size-9 rounded-full bg-secondary" />
@@ -97,9 +97,9 @@ function WorkerDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl space-y-3 px-5 py-6">
+      <main className="mx-auto max-w-4xl space-y-3 px-4 py-5 pb-28 md:px-5 md:py-6 md:pb-6">
         {tab === "dashboard" && (
-          <Card className="p-8 text-center">
+          <Card className="p-6 text-center md:p-8">
             <img src={avatarUrl(me.name)} alt={me.name} className="mx-auto size-16 rounded-full bg-secondary" />
             <h1 className="mt-4 text-2xl font-bold tracking-tight">Good Morning, {me.name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -172,7 +172,7 @@ function WorkerDashboard() {
           </Card>
         )}
 
-        <Card className="p-0">
+        <Card className={tab === "dashboard" ? "p-0 max-md:hidden" : "p-0"}>
           <div className="p-5">
             <h2 className="text-base font-semibold">My Attendance History</h2>
             <p className="text-sm text-muted-foreground">
@@ -180,6 +180,7 @@ function WorkerDashboard() {
             </p>
           </div>
           <DataTable
+            labels={["Date", "Location", "Time In", "Time Out", "Total Hours", "Source"]}
             head={
               <>
                 <Th>Date</Th>
@@ -205,6 +206,27 @@ function WorkerDashboard() {
           </DataTable>
         </Card>
       </main>
+
+      {/* mobile bottom navigation */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden">
+        {([
+          { key: "dashboard", label: "Dashboard", Icon: LogIn },
+          { key: "history", label: "Attendance", Icon: CalendarCheck },
+        ] as const).map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`flex flex-col items-center gap-1 py-2 text-[10px] font-medium ${
+              tab === key ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <span className={`grid h-7 w-14 place-items-center rounded-full ${tab === key ? "bg-primary-soft" : ""}`}>
+              <Icon className="size-4" />
+            </span>
+            {label}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

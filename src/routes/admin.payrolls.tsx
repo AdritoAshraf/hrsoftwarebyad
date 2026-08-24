@@ -214,7 +214,7 @@ function PayrollsPage() {
       }
     >
       <div className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <StatCard label="Payroll Cost" value={money(totals.payrollCost)} hint="gross, all runs" />
           <StatCard label="Deductions & Advances" value={money(totals.expenses)} hint="tax, NI, advances" />
           <StatCard
@@ -248,13 +248,13 @@ function PayrollsPage() {
         <Card className="p-0">
           <div className="flex flex-wrap items-center gap-3 p-5">
             <h2 className="mr-auto text-base font-semibold">Payroll list ({rows.length})</h2>
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search worker"
-                className="h-9 w-52 rounded-lg border border-border bg-card pl-9 text-sm outline-none focus:border-primary"
+                className="h-9 w-full rounded-lg sm:w-52 border border-border bg-card pl-9 text-sm outline-none focus:border-primary"
               />
             </div>
             <select
@@ -272,6 +272,7 @@ function PayrollsPage() {
           </div>
 
           <DataTable
+            labels={["Payroll ID", "Worker", "Period", "Hours", "Rate", "Gross Pay", "Advance", "Net Pay", "Status", "Action"]}
             head={
               <>
                 <Th>Payroll ID</Th>

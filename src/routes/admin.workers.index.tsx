@@ -50,13 +50,13 @@ function WorkerDirectory() {
             All Workers ({rows.length}
             {rows.length !== workers.length ? ` of ${workers.length}` : ""})
           </h2>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search worker"
-              className="h-9 w-56 rounded-lg border border-border bg-card pl-9 text-sm outline-none focus:border-primary"
+              className="h-9 w-full rounded-lg sm:w-56 border border-border bg-card pl-9 text-sm outline-none focus:border-primary"
             />
           </div>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectCls}>
@@ -80,6 +80,7 @@ function WorkerDirectory() {
         </div>
 
         <DataTable
+          labels={["Photo", "Code", "Name", "Contact", "Location", "Joined", "Expiry", "Status", "Action"]}
           head={
             <>
               <Th>Photo</Th>
