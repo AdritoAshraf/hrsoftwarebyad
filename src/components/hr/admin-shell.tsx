@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { GlobalSearch } from "@/components/hr/global-search";
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -177,9 +179,22 @@ export function AdminShell({
   action?: ReactNode;
   children: ReactNode;
 }) {
-  const { notices, workers } = useHR();
+  const { notices, workers, settings, totals } = useHR();
+  const router = useRouter();
   const urgentCount = notices.filter((n) => n.urgency !== "info").length;
   const [searchOpen, setSearchOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refresh = () => {
+    setRefreshing(true);
+    void router.invalidate();
+    setTimeout(() => {
+      setRefreshing(false);
+      toast.success("Data refreshed", {
+        description: `${totals.activeWorkers} active workers · ${urgentCount} urgent alerts`,
+      });
+    }, 600);
+  };
 
   return (
     <div className="flex min-h-screen gap-3 bg-background p-3">
@@ -215,14 +230,7 @@ export function AdminShell({
         <header className="card-surface mb-3 flex items-center gap-2 px-4 py-3 lg:hidden">
           {searchOpen ? (
             <>
-              <div className="relative flex-1">
-                <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
-                <input
-                  autoFocus
-                  placeholder="Search anything..."
-                  className="h-9 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:border-primary"
-                />
-              </div>
+              <GlobalSearch className="flex-1" autoFocus onDone={() => setSearchOpen(false)} />
               <button
                 onClick={() => setSearchOpen(false)}
                 aria-label="Close search"
@@ -271,22 +279,28 @@ export function AdminShell({
         <header className="card-surface mb-3 hidden flex-wrap items-center gap-3 px-5 py-3 lg:flex">
           <h1 className="mr-auto text-lg font-semibold tracking-tight">{title}</h1>
 
-          <div className="relative hidden md:block">
-            <Search className="absolute top-2.5 left-3 size-4 text-muted-foreground" />
-            <input
-              placeholder="Search anything..."
-              className="h-9 w-64 rounded-lg border border-border bg-background pl-9 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
-            />
-          </div>
+          <GlobalSearch className="hidden w-64 md:block" />
 
-          {[Mail, RefreshCw].map((Icon, i) => (
-            <button
-              key={i}
-              className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-secondary"
-            >
-              <Icon className="size-4" />
-            </button>
-          ))}
+          <a
+            href={`mailto:${settings.payrollEmail}?subject=${encodeURIComponent(
+              `${settings.companyName} — HR update`,
+            )}&body=${encodeURIComponent(
+              `Active workers: ${totals.activeWorkers}\nExpiring soon: ${totals.expiringSoon}\nPending payrolls: ${totals.pendingCount}`,
+            )}`}
+            aria-label={`Email payroll contact ${settings.payrollEmail}`}
+            title={`Email ${settings.payrollEmail}`}
+            className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-secondary"
+          >
+            <Mail className="size-4" />
+          </a>
+          <button
+            onClick={refresh}
+            aria-label="Refresh data"
+            title="Refresh data"
+            className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-secondary"
+          >
+            <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
+          </button>
           <Link
             to="/admin/notifications"
             className="relative grid size-9 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-secondary"
