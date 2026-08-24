@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, Clock, Info, RotateCcw } from "lucide-react";
 import { AdminShell } from "@/components/hr/admin-shell";
 import { Card, Person } from "@/components/hr/bits";
@@ -44,6 +44,15 @@ function NotificationsPage() {
       <span className={cn("ml-auto rounded-full px-2.5 py-1 text-xs font-medium capitalize", tone)}>
         {n.urgency}
       </span>
+      {n.workerId && (
+        <Link
+          to="/admin/workers/$id"
+          params={{ id: n.workerId }}
+          className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+        >
+          View Worker
+        </Link>
+      )}
       {n.workerId && (
         <button
           onClick={() => reactivateWorker(n.workerId!)}

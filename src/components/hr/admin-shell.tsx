@@ -95,21 +95,6 @@ export function AdminShell({
           ))}
         </nav>
 
-        <div className="mt-auto rounded-2xl border border-border bg-secondary/60 p-4">
-          <div className="flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-lg bg-primary-soft text-primary">
-              <Sparkles className="size-4" />
-            </span>
-            <div className="leading-tight">
-              <p className="text-sm font-semibold">Upgrade plan</p>
-              <p className="text-xs text-muted-foreground">Trial ends soon</p>
-            </div>
-          </div>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border">
-            <div className="h-full w-[71%] rounded-full bg-primary" />
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">Day 5 of 7</p>
-        </div>
       </aside>
 
       <div className="min-w-0 flex-1">

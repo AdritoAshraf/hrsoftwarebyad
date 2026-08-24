@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Search, Download, RotateCcw, Trash2 } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Search, Download, RotateCcw, Trash2, Eye } from "lucide-react";
 import { AdminShell } from "@/components/hr/admin-shell";
 import { Card, DataTable, EmptyRow, Person, StatusBadge, Td, Th } from "@/components/hr/bits";
+import { avatarUrl } from "@/lib/mock-data";
 import { useHR } from "@/lib/hr-store";
 import { fmtDate, daysUntil } from "@/lib/hr-utils";
 
-export const Route = createFileRoute("/admin/workers")({
+export const Route = createFileRoute("/admin/workers/")({
   head: () => ({
     meta: [
       { title: "Worker Directory — WorkHR" },
@@ -23,6 +24,7 @@ const selectCls =
 
 function WorkerDirectory() {
   const { workers, locations, workerStatus, reactivateWorker, deleteWorker } = useHR();
+  const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
   const [loc, setLoc] = useState("all");
@@ -80,7 +82,8 @@ function WorkerDirectory() {
         <DataTable
           head={
             <>
-              <Th>Worker ID</Th>
+              <Th>Photo</Th>
+              <Th>Worker Code</Th>
               <Th>Name</Th>
               <Th>Phone / Email</Th>
               <Th>Location</Th>
@@ -91,11 +94,18 @@ function WorkerDirectory() {
             </>
           }
         >
-          {rows.length === 0 && <EmptyRow colSpan={8} text="No workers match these filters." />}
+          {rows.length === 0 && <EmptyRow colSpan={9} text="No workers match these filters." />}
           {rows.map((w) => {
             const left = daysUntil(w.expiry);
             return (
-              <tr key={w.id} className="hover:bg-secondary/40">
+              <tr
+                key={w.id}
+                onClick={() => navigate({ to: "/admin/workers/$id", params: { id: w.id } })}
+                className="cursor-pointer hover:bg-secondary/40"
+              >
+                <Td>
+                  <img src={avatarUrl(w.name)} alt={w.name} className="size-9 rounded-full bg-secondary" />
+                </Td>
                 <Td className="font-medium">{w.id}</Td>
                 <Td>
                   <Person name={w.name} sub={w.role} />
@@ -120,7 +130,15 @@ function WorkerDirectory() {
                   <StatusBadge status={workerStatus(w)} />
                 </Td>
                 <Td>
-                  <div className="flex justify-end gap-1 text-muted-foreground">
+                  <div className="flex justify-end gap-1 text-muted-foreground" onClick={(e) => e.stopPropagation()}>
+                    <Link
+                      title="View details"
+                      to="/admin/workers/$id"
+                      params={{ id: w.id }}
+                      className="rounded-md p-1.5 hover:bg-secondary hover:text-primary"
+                    >
+                      <Eye className="size-4" />
+                    </Link>
                     <button
                       title="Reactivate for 3 months"
                       onClick={() => reactivateWorker(w.id)}

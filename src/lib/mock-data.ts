@@ -20,6 +20,8 @@ export type Worker = {
   onLeave?: boolean;
   role: string;
   rate: number;
+  address?: string;
+  nid?: string;
 };
 
 /** expiry = today + daysLeft, joined = expiry - 90 days */

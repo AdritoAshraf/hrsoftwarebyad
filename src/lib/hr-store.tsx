@@ -69,12 +69,28 @@ function useHRState() {
     return app;
   };
 
+  /** Sequential, collision-checked worker code: WKR-YYYY-#### */
+  const nextWorkerCode = (existing: Worker[]) => {
+    const year = new Date().getFullYear();
+    const used = new Set(existing.map((w) => w.id));
+    const nums = existing
+      .map((w) => new RegExp(`^WKR-${year}-(\\d{4})$`).exec(w.id))
+      .map((m) => (m ? Number(m[1]) : 0));
+    let n = Math.max(147, ...nums) + 1;
+    let code = `WKR-${year}-${String(n).padStart(4, "0")}`;
+    while (used.has(code)) {
+      n += 1;
+      code = `WKR-${year}-${String(n).padStart(4, "0")}`;
+    }
+    return code;
+  };
+
   const approveApplication = (id: string) => {
     const app = applications.find((a) => a.id === id);
     if (!app) return null;
     const joined = todayISO();
     const worker: Worker = {
-      id: rid("WRK", 5),
+      id: nextWorkerCode(workers),
       name: app.name,
       phone: app.phone,
       email: app.email,
@@ -83,6 +99,8 @@ function useHRState() {
       rate: app.rate || settings.hourlyRate,
       joined,
       expiry: addMonths(joined, settings.contractMonths),
+      address: app.address,
+      nid: app.nid,
     };
     setWorkers((w) => [worker, ...w]);
     setApplications((a) => a.filter((x) => x.id !== id));

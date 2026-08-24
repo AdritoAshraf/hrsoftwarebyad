@@ -21,7 +21,8 @@ import { Route as AdminNotificationsRouteImport } from './routes/admin.notificat
 import { Route as AdminPayrollsRouteImport } from './routes/admin.payrolls'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
-import { Route as AdminWorkersRouteImport } from './routes/admin.workers'
+import { Route as AdminWorkersIndexRouteImport } from './routes/admin.workers.index'
+import { Route as AdminWorkersIdRouteImport } from './routes/admin.workers.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,9 +84,14 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminWorkersRoute = AdminWorkersRouteImport.update({
-  id: '/admin/workers',
-  path: '/admin/workers',
+const AdminWorkersIndexRoute = AdminWorkersIndexRouteImport.update({
+  id: '/admin/workers/',
+  path: '/admin/workers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWorkersIdRoute = AdminWorkersIdRouteImport.update({
+  id: '/admin/workers/$id',
+  path: '/admin/workers/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -101,8 +107,9 @@ export interface FileRoutesByFullPath {
   '/admin/payrolls': typeof AdminPayrollsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/workers': typeof AdminWorkersRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/workers/$id': typeof AdminWorkersIdRoute
+  '/admin/workers/': typeof AdminWorkersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,8 +123,9 @@ export interface FileRoutesByTo {
   '/admin/payrolls': typeof AdminPayrollsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/workers': typeof AdminWorkersRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/workers/$id': typeof AdminWorkersIdRoute
+  '/admin/workers': typeof AdminWorkersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,8 +140,9 @@ export interface FileRoutesById {
   '/admin/payrolls': typeof AdminPayrollsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/workers': typeof AdminWorkersRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/workers/$id': typeof AdminWorkersIdRoute
+  '/admin/workers/': typeof AdminWorkersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -149,8 +158,9 @@ export interface FileRouteTypes {
     | '/admin/payrolls'
     | '/admin/reports'
     | '/admin/settings'
-    | '/admin/workers'
     | '/admin/'
+    | '/admin/workers/$id'
+    | '/admin/workers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -164,8 +174,9 @@ export interface FileRouteTypes {
     | '/admin/payrolls'
     | '/admin/reports'
     | '/admin/settings'
-    | '/admin/workers'
     | '/admin'
+    | '/admin/workers/$id'
+    | '/admin/workers'
   id:
     | '__root__'
     | '/'
@@ -179,8 +190,9 @@ export interface FileRouteTypes {
     | '/admin/payrolls'
     | '/admin/reports'
     | '/admin/settings'
-    | '/admin/workers'
     | '/admin/'
+    | '/admin/workers/$id'
+    | '/admin/workers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -195,8 +207,9 @@ export interface RootRouteChildren {
   AdminPayrollsRoute: typeof AdminPayrollsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
-  AdminWorkersRoute: typeof AdminWorkersRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminWorkersIdRoute: typeof AdminWorkersIdRoute
+  AdminWorkersIndexRoute: typeof AdminWorkersIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -285,11 +298,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/workers': {
-      id: '/admin/workers'
+    '/admin/workers/': {
+      id: '/admin/workers/'
       path: '/admin/workers'
-      fullPath: '/admin/workers'
-      preLoaderRoute: typeof AdminWorkersRouteImport
+      fullPath: '/admin/workers/'
+      preLoaderRoute: typeof AdminWorkersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/workers/$id': {
+      id: '/admin/workers/$id'
+      path: '/admin/workers/$id'
+      fullPath: '/admin/workers/$id'
+      preLoaderRoute: typeof AdminWorkersIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -307,8 +327,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPayrollsRoute: AdminPayrollsRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
-  AdminWorkersRoute: AdminWorkersRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminWorkersIdRoute: AdminWorkersIdRoute,
+  AdminWorkersIndexRoute: AdminWorkersIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
