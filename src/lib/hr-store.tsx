@@ -82,7 +82,7 @@ function useHRState() {
       role: app.appliedFor,
       rate: app.rate || settings.hourlyRate,
       joined,
-      expiry: addMonths(joined, 3),
+      expiry: addMonths(joined, settings.contractMonths),
     };
     setWorkers((w) => [worker, ...w]);
     setApplications((a) => a.filter((x) => x.id !== id));
@@ -211,7 +211,7 @@ function useHRState() {
 
   const reactivateWorker = (id: string) => {
     setWorkers((ws) =>
-      ws.map((w) => (w.id === id ? { ...w, expiry: addMonths(todayISO(), 3), onLeave: false } : w)),
+      ws.map((w) => (w.id === id ? { ...w, expiry: addMonths(todayISO(), settings.contractMonths), onLeave: false } : w)),
     );
     const w = workers.find((x) => x.id === id);
     if (w) logActivity(w.name, "Contract reactivated for another 3 months");
