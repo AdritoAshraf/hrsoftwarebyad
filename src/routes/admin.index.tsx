@@ -43,7 +43,7 @@ function Dashboard() {
           </Link>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <StatCard label="Total Active Workers" value={String(totals.activeWorkers)} hint="in contract" icon={<Users className="size-4" />} />
           <StatCard label="Total Payroll Cost" value={money(totals.payrollCost)} hint="gross issued" icon={<Wallet className="size-4" />} />
           <StatCard label="Pending Registrations" value={String(applications.length)} hint="awaiting review" icon={<UserPlus className="size-4" />} />

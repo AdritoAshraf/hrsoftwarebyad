@@ -25,7 +25,7 @@ function HelpPage() {
   return (
     <AdminShell title="Help & Center">
       <div className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {[
             { icon: BookOpen, title: "Documentation", desc: "Step-by-step guides for every module." },
             { icon: MessageCircle, title: "Live chat", desc: "Talk to the support team, Mon–Fri 9–6." },

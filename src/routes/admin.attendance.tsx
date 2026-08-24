@@ -153,7 +153,7 @@ function AttendancePage() {
       }
     >
       <div className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <StatCard label="Entries Today" value={String(todayRows.length)} hint="recorded" />
           <StatCard label="Average Hours / Entry" value={`${avg.toFixed(2)}h`} hint="current filter" />
           <StatCard

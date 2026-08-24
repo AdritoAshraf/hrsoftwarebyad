@@ -63,7 +63,7 @@ function ReportsPage() {
           </span>
         </Card>
 
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard label="Total Hours Worked" value={`${totals.totalHours.toFixed(1)} h`} hint="all attendance" />
           <StatCard label="Total Labour Cost" value={money(totals.labourCost)} hint="hours × rate" />
           <StatCard label="Payroll Issued" value={money(totals.payrollCost)} hint="gross, all runs" />

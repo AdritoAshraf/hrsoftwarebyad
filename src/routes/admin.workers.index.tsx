@@ -56,7 +56,7 @@ function WorkerDirectory() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search worker"
-              className="h-9 w-56 rounded-lg border border-border bg-card pl-9 text-sm outline-none focus:border-primary"
+              className="h-9 w-full rounded-lg sm:w-56 border border-border bg-card pl-9 text-sm outline-none focus:border-primary"
             />
           </div>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectCls}>
