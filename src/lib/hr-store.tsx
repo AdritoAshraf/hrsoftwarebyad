@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   seedWorkers,
   seedApplications,
@@ -32,6 +32,23 @@ import {
   weekStart,
   MONTHS,
 } from "./hr-utils";
+
+export type Role = "admin" | "worker";
+export type Session = { email: string; name: string; role: Role; workerId?: string };
+
+const SESSION_KEY = "workhr.session";
+
+/** Demo-only credentials — replaced by real auth later. */
+export const demoUsers: {
+  email: string;
+  password: string;
+  name: string;
+  role: Role;
+  workerId?: string;
+}[] = [
+  { email: "admin@workhr.com", password: "admin123", name: "Turja Sen", role: "admin" },
+  { email: "worker@workhr.com", password: "worker123", name: seedWorkers[0]!.name, role: "worker", workerId: seedWorkers[0]!.id },
+];
 
 export type OpenShift = { workerId: string; date: string; in: string; location: string };
 export type RejectedApp = Application & { rejectedOn: string };
@@ -411,6 +428,10 @@ function useHRState() {
   const deleteOtherCost = (id: string) => setOtherCosts((r) => r.filter((x) => x.id !== id));
 
   return {
+    session,
+    authReady,
+    login,
+    logout,
     workers,
     applications,
     rejected,
