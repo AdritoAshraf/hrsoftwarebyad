@@ -174,7 +174,7 @@ function RegisterPage() {
   const [employers, setEmployers] = useState<Row[]>([{ ...blankEmployer }]);
   const [referees, setReferees] = useState<Row[]>([{ ...blankReferee }]);
   const [skills, setSkills] = useState<Row[]>([]);
-  const [prefLocations, setPrefLocations] = useState<string[]>(locations[0］ ? [] : []);
+  const [prefLocations, setPrefLocations] = useState<string[]>([]);
 
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((s) => ({ ...s, [k]: e.target.value }));
   const setFile = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
