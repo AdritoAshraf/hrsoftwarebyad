@@ -23,6 +23,7 @@ const titles = ["Mr", "Mrs", "Ms", "Miss", "Dr"];
 const availabilityOptions = ["Full-time", "Part-time", "Weekends only", "Flexible"];
 
 type Row = Record<string, string>;
+const g = (r: Row, k: string) => r[k] ?? "";
 
 const blankPrevAddress: Row = { line1: "", line2: "", line3: "", town: "", county: "", postcode: "", country: "", from: "", to: "" };
 const blankEmployer: Row = { name: "", address: "", town: "", postcode: "", phone: "", email: "", role: "", from: "", to: "", reason: "" };
@@ -318,31 +319,31 @@ function RegisterPage() {
               {(row, i) => (
                 <>
                   <Field label="Address Line 1" className="sm:col-span-2">
-                    <input value={row.line1} onChange={rowSet(setPrevAddresses, i, "line1")} className={inputCls} />
+                    <input value={g(row,"line1")} onChange={rowSet(setPrevAddresses, i, "line1")} className={inputCls} />
                   </Field>
                   <Field label="Address Line 2">
-                    <input value={row.line2} onChange={rowSet(setPrevAddresses, i, "line2")} className={inputCls} />
+                    <input value={g(row,"line2")} onChange={rowSet(setPrevAddresses, i, "line2")} className={inputCls} />
                   </Field>
                   <Field label="Address Line 3">
-                    <input value={row.line3} onChange={rowSet(setPrevAddresses, i, "line3")} className={inputCls} />
+                    <input value={g(row,"line3")} onChange={rowSet(setPrevAddresses, i, "line3")} className={inputCls} />
                   </Field>
                   <Field label="Town">
-                    <input value={row.town} onChange={rowSet(setPrevAddresses, i, "town")} className={inputCls} />
+                    <input value={g(row,"town")} onChange={rowSet(setPrevAddresses, i, "town")} className={inputCls} />
                   </Field>
                   <Field label="County">
-                    <input value={row.county} onChange={rowSet(setPrevAddresses, i, "county")} className={inputCls} />
+                    <input value={g(row,"county")} onChange={rowSet(setPrevAddresses, i, "county")} className={inputCls} />
                   </Field>
                   <Field label="Postcode">
-                    <input value={row.postcode} onChange={rowSet(setPrevAddresses, i, "postcode")} className={inputCls} />
+                    <input value={g(row,"postcode")} onChange={rowSet(setPrevAddresses, i, "postcode")} className={inputCls} />
                   </Field>
                   <Field label="Country">
-                    <input value={row.country} onChange={rowSet(setPrevAddresses, i, "country")} className={inputCls} />
+                    <input value={g(row,"country")} onChange={rowSet(setPrevAddresses, i, "country")} className={inputCls} />
                   </Field>
                   <Field label="At Address From">
-                    <input type="date" value={row.from} onChange={rowSet(setPrevAddresses, i, "from")} className={inputCls} />
+                    <input type="date" value={g(row,"from")} onChange={rowSet(setPrevAddresses, i, "from")} className={inputCls} />
                   </Field>
                   <Field label="At Address To">
-                    <input type="date" value={row.to} onChange={rowSet(setPrevAddresses, i, "to")} className={inputCls} />
+                    <input type="date" value={g(row,"to")} onChange={rowSet(setPrevAddresses, i, "to")} className={inputCls} />
                   </Field>
                 </>
               )}
@@ -485,34 +486,34 @@ function RegisterPage() {
               {(row, i) => (
                 <>
                   <Field label="Employer / Organisation Name *">
-                    <input value={row.name} onChange={rowSet(setEmployers, i, "name")} className={inputCls} />
+                    <input value={g(row,"name")} onChange={rowSet(setEmployers, i, "name")} className={inputCls} />
                   </Field>
                   <Field label="Role / Position *">
-                    <input value={row.role} onChange={rowSet(setEmployers, i, "role")} className={inputCls} />
+                    <input value={g(row,"role")} onChange={rowSet(setEmployers, i, "role")} className={inputCls} />
                   </Field>
                   <Field label="Address">
-                    <input value={row.address} onChange={rowSet(setEmployers, i, "address")} className={inputCls} />
+                    <input value={g(row,"address")} onChange={rowSet(setEmployers, i, "address")} className={inputCls} />
                   </Field>
                   <Field label="Town">
-                    <input value={row.town} onChange={rowSet(setEmployers, i, "town")} className={inputCls} />
+                    <input value={g(row,"town")} onChange={rowSet(setEmployers, i, "town")} className={inputCls} />
                   </Field>
                   <Field label="Postcode">
-                    <input value={row.postcode} onChange={rowSet(setEmployers, i, "postcode")} className={inputCls} />
+                    <input value={g(row,"postcode")} onChange={rowSet(setEmployers, i, "postcode")} className={inputCls} />
                   </Field>
                   <Field label="Phone">
-                    <input value={row.phone} onChange={rowSet(setEmployers, i, "phone")} className={inputCls} />
+                    <input value={g(row,"phone")} onChange={rowSet(setEmployers, i, "phone")} className={inputCls} />
                   </Field>
                   <Field label="Email">
-                    <input value={row.email} onChange={rowSet(setEmployers, i, "email")} className={inputCls} />
+                    <input value={g(row,"email")} onChange={rowSet(setEmployers, i, "email")} className={inputCls} />
                   </Field>
                   <Field label="Reason for Leaving">
-                    <input value={row.reason} onChange={rowSet(setEmployers, i, "reason")} className={inputCls} />
+                    <input value={g(row,"reason")} onChange={rowSet(setEmployers, i, "reason")} className={inputCls} />
                   </Field>
                   <Field label="From *">
-                    <input type="date" value={row.from} onChange={rowSet(setEmployers, i, "from")} className={inputCls} />
+                    <input type="date" value={g(row,"from")} onChange={rowSet(setEmployers, i, "from")} className={inputCls} />
                   </Field>
                   <Field label="To *">
-                    <input type="date" value={row.to} onChange={rowSet(setEmployers, i, "to")} className={inputCls} />
+                    <input type="date" value={g(row,"to")} onChange={rowSet(setEmployers, i, "to")} className={inputCls} />
                   </Field>
                 </>
               )}
@@ -528,22 +529,22 @@ function RegisterPage() {
               {(row, i) => (
                 <>
                   <Field label="Referee Name *">
-                    <input value={row.name} onChange={rowSet(setReferees, i, "name")} className={inputCls} />
+                    <input value={g(row,"name")} onChange={rowSet(setReferees, i, "name")} className={inputCls} />
                   </Field>
                   <Field label="Referee Phone *">
-                    <input value={row.phone} onChange={rowSet(setReferees, i, "phone")} className={inputCls} />
+                    <input value={g(row,"phone")} onChange={rowSet(setReferees, i, "phone")} className={inputCls} />
                   </Field>
                   <Field label="Referee Email *">
-                    <input value={row.email} onChange={rowSet(setReferees, i, "email")} className={inputCls} />
+                    <input value={g(row,"email")} onChange={rowSet(setReferees, i, "email")} className={inputCls} />
                   </Field>
                   <Field label="Referee Address">
-                    <input value={row.address} onChange={rowSet(setReferees, i, "address")} className={inputCls} />
+                    <input value={g(row,"address")} onChange={rowSet(setReferees, i, "address")} className={inputCls} />
                   </Field>
                   <Field label="How many years known *">
-                    <input value={row.years} onChange={rowSet(setReferees, i, "years")} className={inputCls} />
+                    <input value={g(row,"years")} onChange={rowSet(setReferees, i, "years")} className={inputCls} />
                   </Field>
                   <Field label="Relationship to you *">
-                    <input value={row.relationship} onChange={rowSet(setReferees, i, "relationship")} className={inputCls} />
+                    <input value={g(row,"relationship")} onChange={rowSet(setReferees, i, "relationship")} className={inputCls} />
                   </Field>
                 </>
               )}
@@ -562,16 +563,16 @@ function RegisterPage() {
               {(row, i) => (
                 <>
                   <Field label="Qualification / Certificate Name">
-                    <input value={row.name} onChange={rowSet(setSkills, i, "name")} className={inputCls} />
+                    <input value={g(row,"name")} onChange={rowSet(setSkills, i, "name")} className={inputCls} />
                   </Field>
                   <Field label="Certificate Number">
-                    <input value={row.number} onChange={rowSet(setSkills, i, "number")} className={inputCls} />
+                    <input value={g(row,"number")} onChange={rowSet(setSkills, i, "number")} className={inputCls} />
                   </Field>
                   <Field label="Date Attained">
-                    <input type="date" value={row.attained} onChange={rowSet(setSkills, i, "attained")} className={inputCls} />
+                    <input type="date" value={g(row,"attained")} onChange={rowSet(setSkills, i, "attained")} className={inputCls} />
                   </Field>
                   <Field label="Expiry Date (if applicable)">
-                    <input type="date" value={row.expiry} onChange={rowSet(setSkills, i, "expiry")} className={inputCls} />
+                    <input type="date" value={g(row,"expiry")} onChange={rowSet(setSkills, i, "expiry")} className={inputCls} />
                   </Field>
                 </>
               )}
@@ -645,13 +646,13 @@ function RegisterPage() {
                 key={i}
                 title={`Previous Address ${i + 1}`}
                 items={[
-                  ["Address", [a.line1, a.line2, a.line3].filter(Boolean).join(", ")],
-                  ["Town", a.town],
-                  ["County", a.county],
-                  ["Postcode", a.postcode],
-                  ["Country", a.country],
-                  ["From", a.from],
-                  ["To", a.to],
+                  ["Address", [g(a,"line1"), g(a,"line2"), g(a,"line3")].filter(Boolean).join(", ")],
+                  ["Town", g(a,"town")],
+                  ["County", g(a,"county")],
+                  ["Postcode", g(a,"postcode")],
+                  ["Country", g(a,"country")],
+                  ["From", g(a,"from")],
+                  ["To", g(a,"to")],
                 ]}
               />
             ))}
@@ -703,14 +704,14 @@ function RegisterPage() {
                 key={i}
                 title={`Employment Record ${i + 1}`}
                 items={[
-                  ["Employer", e.name],
-                  ["Role", e.role],
-                  ["Address", [e.address, e.town, e.postcode].filter(Boolean).join(", ")],
-                  ["Phone", e.phone],
-                  ["Email", e.email],
-                  ["From", e.from],
-                  ["To", e.to],
-                  ["Reason for leaving", e.reason],
+                  ["Employer", g(e,"name")],
+                  ["Role", g(e,"role")],
+                  ["Address", [g(e,"address"), g(e,"town"), g(e,"postcode")].filter(Boolean).join(", ")],
+                  ["Phone", g(e,"phone")],
+                  ["Email", g(e,"email")],
+                  ["From", g(e,"from")],
+                  ["To", g(e,"to")],
+                  ["Reason for leaving", g(e,"reason")],
                 ]}
               />
             ))}
@@ -719,12 +720,12 @@ function RegisterPage() {
                 key={i}
                 title={`Character Referee ${i + 1}`}
                 items={[
-                  ["Name", r.name],
-                  ["Phone", r.phone],
-                  ["Email", r.email],
-                  ["Address", r.address],
-                  ["Years known", r.years],
-                  ["Relationship", r.relationship],
+                  ["Name", g(r,"name")],
+                  ["Phone", g(r,"phone")],
+                  ["Email", g(r,"email")],
+                  ["Address", g(r,"address")],
+                  ["Years known", g(r,"years")],
+                  ["Relationship", g(r,"relationship")],
                 ]}
               />
             ))}
@@ -733,10 +734,10 @@ function RegisterPage() {
                 key={i}
                 title={`Qualification ${i + 1}`}
                 items={[
-                  ["Name", s.name],
-                  ["Certificate No", s.number],
-                  ["Date Attained", s.attained],
-                  ["Expiry", s.expiry],
+                  ["Name", g(s,"name")],
+                  ["Certificate No", g(s,"number")],
+                  ["Date Attained", g(s,"attained")],
+                  ["Expiry", g(s,"expiry")],
                 ]}
               />
             ))}
