@@ -89,7 +89,7 @@ function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: t
 function MobileNav({ onLogout }: { onLogout: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [more, setMore] = useState(false);
-  const moreActive = moreMenu.some((m) => m.to !== "/" && isActive(pathname, m.to));
+  const moreActive = moreMenu.some((m) => isActive(pathname, m.to));
 
   return (
     <>
@@ -115,7 +115,7 @@ function MobileNav({ onLogout }: { onLogout: () => void }) {
                   onClick={() => setMore(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-3 py-3 text-sm",
-                    i.to !== "/" && isActive(pathname, i.to)
+                    isActive(pathname, i.to)
                       ? "bg-primary-soft font-semibold text-primary"
                       : "text-muted-foreground",
                   )}
