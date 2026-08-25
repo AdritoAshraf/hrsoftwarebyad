@@ -62,6 +62,8 @@ export type Application = {
   appliedFor: string;
   location: string;
   rate: number;
+  /** Full multi-step application payload (optional, demo only). */
+  details?: Record<string, unknown>;
 };
 
 export const seedApplications: Application[] = [
