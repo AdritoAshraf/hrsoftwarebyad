@@ -66,7 +66,7 @@ function Repeat({
   );
 }
 
-function Doc({ label, name, url }: { label: string; name: string; url?: string }) {
+function Doc({ label, name, url }: { label: string; name: string; url?: string | undefined }) {
   const body = (
     <>
       <FileImage className="size-5" />
