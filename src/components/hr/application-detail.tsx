@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { FileImage, ExternalLink } from "lucide-react";
 import { avatarUrl, type Application } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/hr/bits";
@@ -6,27 +7,34 @@ import { fmtDate } from "@/lib/hr-utils";
 type Row = Record<string, string>;
 const g = (r: Row | undefined, k: string) => (r?.[k] ?? "").toString();
 
+const asRows = (v: unknown): Row[] => (Array.isArray(v) ? (v as Row[]) : []);
+const asStrings = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
+
 function val(v: unknown): string {
   if (v === null || v === undefined || v === "") return "—";
   if (Array.isArray(v)) return v.length ? v.join(", ") : "—";
   return String(v);
 }
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
+function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-5 first:mt-0">
-      <h3 className="mb-2 text-sm font-semibold">{title}</h3>
-      <div className="grid gap-3 sm:grid-cols-2">{children}</div>
+      <h3 className="mb-2 text-sm font-semibold tracking-tight text-primary">{title}</h3>
+      {children}
     </section>
   );
 }
 
-function Item({ k, v }: { k: string; v: unknown }) {
+function SummaryList({ items }: { items: [string, unknown][] }) {
   return (
-    <div className="rounded-xl bg-secondary/60 p-3">
-      <p className="text-xs text-muted-foreground">{k}</p>
-      <p className="mt-0.5 text-sm font-medium break-words">{val(v)}</p>
-    </div>
+    <dl className="grid gap-x-6 gap-y-1.5 rounded-xl border border-border p-4 sm:grid-cols-2">
+      {items.map(([k, v]) => (
+        <div key={k} className="flex justify-between gap-4 text-sm">
+          <dt className="text-muted-foreground">{k}</dt>
+          <dd className="text-right font-medium break-words">{val(v)}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -42,10 +50,10 @@ function Repeat({
   emptyLabel: string;
 }) {
   return (
-    <section className="mt-5">
-      <h3 className="mb-2 text-sm font-semibold">{title}</h3>
+    <div className="mt-4">
+      <h4 className="mb-2 text-xs font-semibold uppercase tracking-normal text-muted-foreground">{title}</h4>
       {rows.length === 0 ? (
-        <p className="rounded-xl bg-secondary/60 p-3 text-sm text-muted-foreground">{emptyLabel}</p>
+        <p className="rounded-xl border border-border p-4 text-sm text-muted-foreground">{emptyLabel}</p>
       ) : (
         <div className="space-y-3">
           {rows.map((r, i) => (
@@ -53,16 +61,12 @@ function Repeat({
               <p className="mb-2 text-xs font-medium text-muted-foreground">
                 {title} #{i + 1}
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {fields.map(([label, key]) => (
-                  <Item key={key} k={label} v={g(r, key)} />
-                ))}
-              </div>
+              <SummaryList items={fields.map(([label, key]) => [label, g(r, key)])} />
             </div>
           ))}
         </div>
       )}
-    </section>
+    </div>
   );
 }
 
@@ -97,9 +101,13 @@ function Doc({ label, name, url }: { label: string; name: string; url?: string |
 /** Read-only, grouped summary of a full 5-step application (Step 5 review layout). */
 export function ApplicationDetail({ app }: { app: Application }) {
   const d = (app.details ?? {}) as Record<string, unknown>;
-  const has = Object.keys(d).length > 0;
   const docUrls = (d["docUrls"] ?? {}) as Record<string, string>;
   const str = (k: string) => (d[k] ?? "") as string;
+  const prevAddresses = asRows(d["prevAddresses"]);
+  const employers = asRows(d["employers"]);
+  const referees = asRows(d["referees"]);
+  const skills = asRows(d["skills"]);
+  const prefLocations = asStrings(d["prefLocations"]);
 
   return (
     <div>
@@ -120,177 +128,174 @@ export function ApplicationDetail({ app }: { app: Application }) {
         </div>
       </div>
 
-      <Group title="Application">
-        <Item k="Application ID" v={app.id} />
-        <Item k="Position Applied For" v={app.appliedFor} />
-        <Item k="Submitted" v={fmtDate(app.submitted)} />
-        <Item k="Requested Rate" v={`£${app.rate.toFixed(2)} / hour`} />
+      <Group title="Personal Details">
+        <SummaryList
+          items={[
+            ["Application ID", app.id],
+            ["Position applied for", app.appliedFor],
+            ["Submitted", fmtDate(app.submitted)],
+            ["Title", str("title")],
+            ["Surname", str("surname")],
+            ["Forename", str("forename")],
+            ["Date of Birth", str("dob")],
+            ["Surname at Birth", str("birthSurname")],
+            ["Date of Name Change", str("nameChangeDate")],
+          ]}
+        />
       </Group>
 
-      {!has && (
-        <Group title="Personal Details">
-          <Item k="Phone" v={app.phone} />
-          <Item k="Email" v={app.email} />
-          <Item k="Address" v={app.address} />
-          <Item k="NID Number" v={app.nid} />
-          <Item k="Preferred Location" v={app.location} />
-        </Group>
-      )}
+      <Group title="Contact Information">
+        <SummaryList items={[["Mobile", str("mobile") || app.phone], ["Email", str("email") || app.email]]} />
+      </Group>
 
-      {has && (
-        <>
-          <Group title="Personal Details">
-            <Item k="Title" v={str("title")} />
-            <Item k="Surname" v={str("surname")} />
-            <Item k="Forename" v={str("forename")} />
-            <Item k="Date of Birth" v={str("dob")} />
-            <Item k="Surname at Birth" v={str("surnameAtBirth")} />
-            <Item k="Date of Name Change" v={str("nameChangeDate")} />
-          </Group>
+      <Group title="Current Address">
+        <SummaryList
+          items={[
+            ["Address Line 1", str("addr1") || app.address],
+            ["Address Line 2", str("addr2")],
+            ["Address Line 3", str("addr3")],
+            ["Town", str("town")],
+            ["County", str("county")],
+            ["Postcode", str("postcode")],
+            ["Country", str("country")],
+            ["At Current Address From", str("addressFrom")],
+          ]}
+        />
+      </Group>
 
-          <Group title="Contact Information">
-            <Item k="Mobile" v={str("mobile") || app.phone} />
-            <Item k="Email" v={str("email") || app.email} />
-          </Group>
+      <Group title="Previous Address(es)">
+        <Repeat
+          title="Previous Address"
+          rows={prevAddresses}
+          emptyLabel="No previous addresses provided."
+          fields={[
+            ["Address Line 1", "line1"],
+            ["Address Line 2", "line2"],
+            ["Address Line 3", "line3"],
+            ["Town", "town"],
+            ["County", "county"],
+            ["Postcode", "postcode"],
+            ["Country", "country"],
+            ["At Address From", "from"],
+            ["At Address To", "to"],
+          ]}
+        />
+      </Group>
 
-          <Group title="Current Address">
-            <Item k="Address Line 1" v={str("addr1")} />
-            <Item k="Address Line 2" v={str("addr2")} />
-            <Item k="Address Line 3" v={str("addr3")} />
-            <Item k="Town" v={str("town")} />
-            <Item k="County" v={str("county")} />
-            <Item k="Postcode" v={str("postcode")} />
-            <Item k="Country" v={str("country")} />
-            <Item k="At Address From" v={str("atAddressFrom")} />
-          </Group>
+      <Group title="Nationality">
+        <SummaryList
+          items={[
+            ["Place of Birth", str("birthPlace")],
+            ["Nationality", str("nationality")],
+            ["National Insurance No", str("ni") || app.nid],
+            ["Permitted to work in UK", str("rtw")],
+          ]}
+        />
+      </Group>
 
-          <Repeat
-            title="Previous Address"
-            rows={(d["prevAddresses"] as Row[]) ?? []}
-            emptyLabel="No previous addresses provided."
-            fields={[
-              ["Address Line 1", "addr1"],
-              ["Address Line 2", "addr2"],
-              ["Address Line 3", "addr3"],
-              ["Town", "town"],
-              ["County", "county"],
-              ["Postcode", "postcode"],
-              ["Country", "country"],
-              ["From", "from"],
-              ["To", "to"],
+      <Group title="Next of Kin/Emergency Contact">
+        <SummaryList
+          items={[
+            ["Forename", str("kinForename")],
+            ["Surname", str("kinSurname")],
+            ["Phone", str("kinPhone")],
+            ["Address Line 1", str("kinAddr1")],
+            ["Address Line 2", str("kinAddr2")],
+            ["Address Line 3", str("kinAddr3")],
+            ["Town", str("kinTown")],
+            ["County", str("kinCounty")],
+            ["Postcode", str("kinPostcode")],
+            ["Country", str("kinCountry")],
+          ]}
+        />
+      </Group>
+
+      <Group title="Documents & Eligibility">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Doc label="Profile Photo" name={str("photo")} url={docUrls["photo"]} />
+          <Doc label="NID / ID Front" name={str("idFront")} url={docUrls["idFront"]} />
+          <Doc label="NID / ID Back" name={str("idBack")} url={docUrls["idBack"]} />
+          <Doc label="Proof of Address" name={str("proofAddress")} url={docUrls["proofAddress"]} />
+        </div>
+        <div className="mt-3">
+          <SummaryList
+            items={[
+              ["Holds work permit / visa", str("hasVisa")],
+              ["Visa Type", str("visaType")],
+              ["Visa Expiry", str("visaExpiry")],
+              ["Bank Name", str("bankName")],
+              ["Account Holder", str("accountHolder")],
+              ["Sort Code / Account Number", str("sortAccount")],
+              ["Medical conditions", str("medical")],
+              ["Dietary / accessibility needs", str("dietary")],
             ]}
           />
+        </div>
+      </Group>
 
-          <Group title="Nationality">
-            <Item k="Town / Place of Birth" v={str("birthPlace")} />
-            <Item k="Nationality" v={str("nationality")} />
-            <Item k="National Insurance No" v={str("ni")} />
-            <Item k="Permitted to work in the UK" v={str("rightToWork")} />
-          </Group>
+      <Group title="Work History">
+        <SummaryList
+          items={[
+            ["Worked here before", str("workedBefore")],
+            ["From", str("beforeFrom")],
+            ["To", str("beforeTo")],
+            ["Reason for leaving", str("beforeReason")],
+          ]}
+        />
+        <Repeat
+          title="Employment Record"
+          rows={employers}
+          emptyLabel="No employment history provided."
+          fields={[
+            ["Employer", "name"],
+            ["Role / Position", "role"],
+            ["Address", "address"],
+            ["Town", "town"],
+            ["Postcode", "postcode"],
+            ["Phone", "phone"],
+            ["Email", "email"],
+            ["From", "from"],
+            ["To", "to"],
+            ["Reason for Leaving", "reason"],
+          ]}
+        />
+        <Repeat
+          title="Character Referee"
+          rows={referees}
+          emptyLabel="No referees provided."
+          fields={[
+            ["Name", "name"],
+            ["Phone", "phone"],
+            ["Email", "email"],
+            ["Address", "address"],
+            ["Years Known", "years"],
+            ["Relationship", "relationship"],
+          ]}
+        />
+      </Group>
 
-          <Group title="Next of Kin / Emergency Contact">
-            <Item k="Forename" v={str("kinForename")} />
-            <Item k="Surname" v={str("kinSurname")} />
-            <Item k="Phone" v={str("kinPhone")} />
-            <Item k="Address Line 1" v={str("kinAddr1")} />
-            <Item k="Address Line 2" v={str("kinAddr2")} />
-            <Item k="Address Line 3" v={str("kinAddr3")} />
-            <Item k="Town" v={str("kinTown")} />
-            <Item k="County" v={str("kinCounty")} />
-            <Item k="Postcode" v={str("kinPostcode")} />
-            <Item k="Country" v={str("kinCountry")} />
-          </Group>
-
-          <section className="mt-5">
-            <h3 className="mb-2 text-sm font-semibold">Documents</h3>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Doc label="Profile Photo" name={str("photo")} url={docUrls["photo"]} />
-              <Doc label="NID / ID Front" name={str("idFront")} url={docUrls["idFront"]} />
-              <Doc label="NID / ID Back" name={str("idBack")} url={docUrls["idBack"]} />
-              <Doc
-                label="Proof of Address"
-                name={str("proofAddress")}
-                url={docUrls["proofAddress"]}
-              />
-            </div>
-          </section>
-
-          <Group title="Right to Work / Visa">
-            <Item k="Holds work permit / visa" v={str("hasVisa")} />
-            <Item k="Visa Type" v={str("visaType")} />
-            <Item k="Visa Expiry" v={str("visaExpiry")} />
-          </Group>
-
-          <Group title="Bank Details">
-            <Item k="Bank Name" v={str("bankName")} />
-            <Item k="Account Holder" v={str("accountHolder")} />
-            <Item k="Sort Code" v={str("sortCode")} />
-            <Item k="Account Number" v={str("accountNumber")} />
-          </Group>
-
-          <Group title="Health & Accessibility">
-            <Item k="Medical conditions" v={str("medical")} />
-            <Item k="Dietary / accessibility needs" v={str("dietary")} />
-          </Group>
-
-          <Group title="Previous Employment With Us">
-            <Item k="Worked here before" v={str("workedBefore")} />
-            <Item k="From" v={str("workedFrom")} />
-            <Item k="To" v={str("workedTo")} />
-            <Item k="Reason for leaving" v={str("workedReason")} />
-          </Group>
-
-          <Repeat
-            title="Employment Record"
-            rows={(d["employers"] as Row[]) ?? []}
-            emptyLabel="No employment history provided."
-            fields={[
-              ["Employer", "name"],
-              ["Role / Position", "role"],
-              ["Address", "address"],
-              ["Town", "town"],
-              ["Postcode", "postcode"],
-              ["Phone", "phone"],
-              ["Email", "email"],
-              ["From", "from"],
-              ["To", "to"],
-              ["Reason for Leaving", "reason"],
+      <Group title="Skills & Availability">
+        <Repeat
+          title="Skills & Qualifications"
+          rows={skills}
+          emptyLabel="No qualifications provided."
+          fields={[
+            ["Qualification", "name"],
+            ["Certificate Number", "number"],
+            ["Date Attained", "attained"],
+            ["Expiry Date", "expiry"],
+          ]}
+        />
+        <div className="mt-3">
+          <SummaryList
+            items={[
+              ["Preferred Locations", prefLocations.length ? prefLocations : app.location],
+              ["Preferred Hours", str("availability")],
+              ["Expected Hourly Rate", `£${(Number(str("rate")) || app.rate).toFixed(2)} / hour`],
             ]}
           />
-
-          <Repeat
-            title="Character Referee"
-            rows={(d["referees"] as Row[]) ?? []}
-            emptyLabel="No referees provided."
-            fields={[
-              ["Name", "name"],
-              ["Phone", "phone"],
-              ["Email", "email"],
-              ["Address", "address"],
-              ["Years Known", "years"],
-              ["Relationship", "relationship"],
-            ]}
-          />
-
-          <Repeat
-            title="Skills & Qualifications"
-            rows={(d["skills"] as Row[]) ?? []}
-            emptyLabel="No qualifications provided."
-            fields={[
-              ["Qualification", "name"],
-              ["Date Attained", "attained"],
-              ["Expiry Date", "expiry"],
-              ["Certificate Number", "certNo"],
-            ]}
-          />
-
-          <Group title="Availability">
-            <Item k="Preferred Locations" v={d["prefLocations"]} />
-            <Item k="Preferred Hours" v={str("availability")} />
-            <Item k="Expected Hourly Rate" v={str("expectedRate") ? `£${str("expectedRate")}` : ""} />
-          </Group>
-        </>
-      )}
+        </div>
+      </Group>
     </div>
   );
 }
