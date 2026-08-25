@@ -176,10 +176,23 @@ function RegisterPage() {
   const [referees, setReferees] = useState<Row[]>([{ ...blankReferee }]);
   const [skills, setSkills] = useState<Row[]>([]);
   const [prefLocations, setPrefLocations] = useState<string[]>([]);
+  const [docUrls, setDocUrls] = useState<Record<string, string>>({});
 
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((s) => ({ ...s, [k]: e.target.value }));
-  const setFile = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setF((s) => ({ ...s, [k]: e.target.files?.[0]?.name ?? "" }));
+  const setFile = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setF((s) => ({ ...s, [k]: file?.name ?? "" }));
+    if (!file) {
+      setDocUrls((s) => {
+        const { [k as string]: _drop, ...rest } = s;
+        return rest;
+      });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setDocUrls((s) => ({ ...s, [k as string]: String(reader.result) }));
+    reader.readAsDataURL(file);
+  };
   const rowSet = (
     setter: React.Dispatch<React.SetStateAction<Row[]>>,
     i: number,
@@ -200,7 +213,7 @@ function RegisterPage() {
       appliedFor: VACANCY,
       location: prefLocations[0] ?? locations[0]?.name ?? "",
       rate: Number(f.rate) || settings.hourlyRate,
-      details: { ...f, prevAddresses, employers, referees, skills, prefLocations },
+      details: { ...f, prevAddresses, employers, referees, skills, prefLocations, docUrls },
     });
     setDone(app.id);
   };

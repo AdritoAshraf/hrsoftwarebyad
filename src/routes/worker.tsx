@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, MapPin, LogIn, LogOut, CheckCircle2, ArrowLeft, CalendarCheck } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Sparkles, MapPin, LogIn, LogOut, CheckCircle2, CalendarCheck, User, Power } from "lucide-react";
 import { Card, DataTable, EmptyRow, StatusBadge, Td, Th } from "@/components/hr/bits";
 import { avatarUrl } from "@/lib/mock-data";
 import { useHR } from "@/lib/hr-store";
+import { RequireRole } from "@/components/hr/auth-guard";
 import { fmtDate, hoursBetween, nowTime, todayISO } from "@/lib/hr-utils";
 
 export const Route = createFileRoute("/worker")({
@@ -15,8 +16,16 @@ export const Route = createFileRoute("/worker")({
       { property: "og:description", content: "Check in and out of your shift and review your own attendance history." },
     ],
   }),
-  component: WorkerDashboard,
+  component: WorkerRoute,
 });
+
+function WorkerRoute() {
+  return (
+    <RequireRole role="worker">
+      <WorkerDashboard />
+    </RequireRole>
+  );
+}
 
 function WorkerDashboard() {
   const {
@@ -24,7 +33,8 @@ function WorkerDashboard() {
     locations,
     attendance,
     currentWorkerId,
-    setCurrentWorkerId,
+    logout,
+    session,
     checkIn,
     checkOut,
     openShiftFor,
@@ -35,7 +45,13 @@ function WorkerDashboard() {
   const shift = me ? openShiftFor(me.id) : null;
   const [picking, setPicking] = useState(false);
   const [location, setLocation] = useState(locations[0]?.name ?? "");
-  const [tab, setTab] = useState<"dashboard" | "history">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "history" | "profile">("dashboard");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    void navigate({ to: "/", replace: true });
+  };
 
   const history = useMemo(
     () =>
@@ -63,7 +79,7 @@ function WorkerDashboard() {
           <span className="text-lg font-bold tracking-tight">WorkHR</span>
 
           <nav className="ml-6 hidden gap-1 md:flex">
-            {(["dashboard", "history"] as const).map((t) => (
+            {(["dashboard", "history", "profile"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -71,27 +87,23 @@ function WorkerDashboard() {
                   tab === t ? "bg-primary-soft font-medium text-primary" : "text-muted-foreground"
                 }`}
               >
-                {t === "history" ? "Attendance History" : "Dashboard"}
+                {t === "history" ? "My Attendance History" : t === "profile" ? "My Profile" : "Check In / Out"}
               </button>
             ))}
           </nav>
 
           <div className="ml-auto flex min-w-0 items-center gap-3">
-            <select
-              value={me.id}
-              onChange={(e) => setCurrentWorkerId(e.target.value)}
-              className="h-9 max-w-32 rounded-lg border border-border bg-card px-2 text-sm outline-none focus:border-primary"
-              aria-label="Signed in as"
+            <span className="hidden truncate text-sm text-muted-foreground sm:block">
+              {session?.email ?? me.email}
+            </span>
+            <button
+              onClick={handleLogout}
+              aria-label="Log out"
+              title="Log out"
+              className="grid size-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-danger"
             >
-              {workers.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
-            <Link to="/" className="hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground md:flex">
-              <ArrowLeft className="size-4" /> Switch role
-            </Link>
+              <Power className="size-4" />
+            </button>
             <img src={avatarUrl(me.name)} alt={me.name} className="size-9 rounded-full bg-secondary" />
           </div>
         </div>
@@ -172,7 +184,43 @@ function WorkerDashboard() {
           </Card>
         )}
 
-        <Card className={tab === "dashboard" ? "p-0 max-md:hidden" : "p-0"}>
+        {tab === "profile" && (
+          <Card>
+            <div className="flex items-center gap-4">
+              <img src={avatarUrl(me.name)} alt={me.name} className="size-16 rounded-2xl bg-secondary" />
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold tracking-tight">{me.name}</h2>
+                <p className="text-sm text-muted-foreground">{me.role}</p>
+                <div className="mt-2"><StatusBadge status={workerStatus(me)} /></div>
+              </div>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {[
+                ["Worker Code", me.id],
+                ["Phone", me.phone],
+                ["Email", me.email],
+                ["Work Location", me.location],
+                ["Hourly Rate", `£${me.rate.toFixed(2)} / hour`],
+                ["Joining Date", fmtDate(me.joined)],
+                ["Contract Expiry", fmtDate(me.expiry)],
+                ["Address", me.address ?? "—"],
+              ].map(([k, v]) => (
+                <div key={k} className="rounded-xl bg-secondary/60 p-3">
+                  <p className="text-xs text-muted-foreground">{k}</p>
+                  <p className="mt-0.5 text-sm font-medium break-words">{v}</p>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={handleLogout}
+              className="mt-5 flex h-10 items-center gap-2 rounded-lg border border-border px-4 text-sm font-medium text-danger"
+            >
+              <Power className="size-4" /> Log Out
+            </button>
+          </Card>
+        )}
+
+        <Card className={tab === "profile" ? "hidden" : tab === "dashboard" ? "p-0 max-md:hidden" : "p-0"}>
           <div className="p-5">
             <h2 className="text-base font-semibold">My Attendance History</h2>
             <p className="text-sm text-muted-foreground">
@@ -208,10 +256,11 @@ function WorkerDashboard() {
       </main>
 
       {/* mobile bottom navigation */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden">
         {([
-          { key: "dashboard", label: "Dashboard", Icon: LogIn },
+          { key: "dashboard", label: "Check In/Out", Icon: LogIn },
           { key: "history", label: "Attendance", Icon: CalendarCheck },
+          { key: "profile", label: "My Profile", Icon: User },
         ] as const).map(({ key, label, Icon }) => (
           <button
             key={key}

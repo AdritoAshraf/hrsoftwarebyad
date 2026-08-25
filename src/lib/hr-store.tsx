@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   seedWorkers,
   seedApplications,
@@ -33,6 +33,23 @@ import {
   MONTHS,
 } from "./hr-utils";
 
+export type Role = "admin" | "worker";
+export type Session = { email: string; name: string; role: Role; workerId?: string | undefined };
+
+const SESSION_KEY = "workhr.session";
+
+/** Demo-only credentials — replaced by real auth later. */
+export const demoUsers: {
+  email: string;
+  password: string;
+  name: string;
+  role: Role;
+  workerId?: string;
+}[] = [
+  { email: "admin@workhr.com", password: "admin123", name: "Turja Sen", role: "admin" },
+  { email: "worker@workhr.com", password: "worker123", name: seedWorkers[0]!.name, role: "worker", workerId: seedWorkers[0]!.id },
+];
+
 export type OpenShift = { workerId: string; date: string; in: string; location: string };
 export type RejectedApp = Application & { rejectedOn: string };
 
@@ -54,6 +71,56 @@ function useHRState() {
   const [buyerIncome, setBuyerIncome] = useState<BuyerIncome[]>(seedBuyerIncome);
   const [otherCosts, setOtherCosts] = useState<OtherCost[]>(seedOtherCosts);
   const [currentWorkerId, setCurrentWorkerId] = useState<string>(seedWorkers[0]!.id);
+
+  /* ---------------- mock session / auth ---------------- */
+  const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Session;
+        if (parsed?.role) {
+          setSession(parsed);
+          if (parsed.workerId) setCurrentWorkerId(parsed.workerId);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    setAuthReady(true);
+  }, []);
+
+  const login = (email: string, password: string): Session | null => {
+    const user = demoUsers.find(
+      (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password,
+    );
+    if (!user) return null;
+    const next: Session = {
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      workerId: user.role === "worker" ? (user.workerId ?? seedWorkers[0]!.id) : undefined,
+    };
+    setSession(next);
+    if (next.workerId) setCurrentWorkerId(next.workerId);
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+    return next;
+  };
+
+  const logout = () => {
+    setSession(null);
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const logActivity = (worker: string, message: string) =>
     setActivity((a) =>
@@ -361,6 +428,10 @@ function useHRState() {
   const deleteOtherCost = (id: string) => setOtherCosts((r) => r.filter((x) => x.id !== id));
 
   return {
+    session,
+    authReady,
+    login,
+    logout,
     workers,
     applications,
     rejected,
