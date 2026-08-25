@@ -34,7 +34,7 @@ import {
 } from "./hr-utils";
 
 export type Role = "admin" | "worker";
-export type Session = { email: string; name: string; role: Role; workerId?: string };
+export type Session = { email: string; name: string; role: Role; workerId?: string | undefined };
 
 const SESSION_KEY = "workhr.session";
 
