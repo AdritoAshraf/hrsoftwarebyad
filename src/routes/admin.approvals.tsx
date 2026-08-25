@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, X, FileImage, ArrowLeft, ExternalLink } from "lucide-react";
+import { Check, X, ArrowLeft, ExternalLink } from "lucide-react";
 import { AdminShell } from "@/components/hr/admin-shell";
 import { Card, DataTable, EmptyRow, Person, StatusBadge, Td, Th } from "@/components/hr/bits";
-import { avatarUrl, type Application } from "@/lib/mock-data";
+import { type Application } from "@/lib/mock-data";
+import { ApplicationDetail } from "@/components/hr/application-detail";
 import { useHR } from "@/lib/hr-store";
 import { fmtDate } from "@/lib/hr-utils";
 
@@ -36,52 +37,15 @@ function Detail({
         <ArrowLeft className="size-4" /> Back to applications
       </button>
 
-      <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
-        <div className="text-center">
-          <img src={avatarUrl(app.name)} alt={app.name} className="mx-auto size-32 rounded-2xl bg-secondary" />
-          <h2 className="mt-4 text-lg font-semibold">{app.name}</h2>
-          <p className="text-sm text-muted-foreground">{app.appliedFor}</p>
-          <div className="mt-3 flex justify-center"><StatusBadge status="Pending" /></div>
-        </div>
+      <ApplicationDetail app={app} />
 
-        <div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              ["Application ID", app.id],
-              ["Submitted", fmtDate(app.submitted)],
-              ["Phone", app.phone],
-              ["Email", app.email],
-              ["Address", app.address],
-              ["NID Number", app.nid],
-              ["Preferred location", app.location],
-              ["Requested rate", `£${app.rate.toFixed(2)} / hour`],
-            ].map(([k, v]) => (
-              <div key={k} className="rounded-xl bg-secondary/60 p-3">
-                <p className="text-xs text-muted-foreground">{k}</p>
-                <p className="mt-0.5 text-sm font-medium">{v}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="mt-6 mb-2 text-sm font-semibold">Uploaded documents</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {["NID Front", "NID Back"].map((d) => (
-              <div key={d} className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-secondary/40 text-muted-foreground">
-                <FileImage className="size-6" />
-                <span className="text-xs">{d} preview</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex gap-3">
-            <button onClick={onApprove} className="flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground">
-              <Check className="size-4" /> Approve
-            </button>
-            <button onClick={onReject} className="flex h-10 items-center gap-2 rounded-lg border border-border px-5 text-sm font-medium text-danger">
-              <X className="size-4" /> Reject
-            </button>
-          </div>
-        </div>
+      <div className="mt-6 flex flex-wrap gap-3 border-t border-border pt-5">
+        <button onClick={onApprove} className="flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground">
+          <Check className="size-4" /> Approve
+        </button>
+        <button onClick={onReject} className="flex h-10 items-center gap-2 rounded-lg border border-border px-5 text-sm font-medium text-danger">
+          <X className="size-4" /> Reject
+        </button>
       </div>
     </Card>
   );
