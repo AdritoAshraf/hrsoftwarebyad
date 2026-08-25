@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { GlobalSearch } from "@/components/hr/global-search";
 import {
@@ -21,10 +21,12 @@ import {
   Sparkles,
   MoreHorizontal,
   X,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { avatarUrl } from "@/lib/mock-data";
 import { useHR } from "@/lib/hr-store";
+import { RequireRole } from "@/components/hr/auth-guard";
 
 const mainMenu = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -59,7 +61,6 @@ const moreMenu = [
   { to: "/admin/finance", label: "Buyer & Profit/Loss", icon: Scale },
   { to: "/admin/settings", label: "Settings", icon: Settings },
   { to: "/admin/help", label: "Help & Center", icon: LifeBuoy },
-  { to: "/", label: "Switch role", icon: RefreshCw },
 ] as const;
 
 function isActive(pathname: string, to: string) {
@@ -85,7 +86,7 @@ function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: t
   );
 }
 
-function MobileNav() {
+function MobileNav({ onLogout }: { onLogout: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [more, setMore] = useState(false);
   const moreActive = moreMenu.some((m) => m.to !== "/" && isActive(pathname, m.to));
@@ -122,6 +123,15 @@ function MobileNav() {
                   <i.icon className="size-4" /> {i.label}
                 </Link>
               ))}
+              <button
+                onClick={() => {
+                  setMore(false);
+                  onLogout();
+                }}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-left text-sm text-danger"
+              >
+                <LogOut className="size-4" /> Log Out
+              </button>
             </nav>
           </div>
         </div>
@@ -173,7 +183,15 @@ function MobileNav() {
   );
 }
 
-export function AdminShell({
+export function AdminShell(props: { title: string; action?: ReactNode; children: ReactNode }) {
+  return (
+    <RequireRole role="admin">
+      <AdminShellInner {...props} />
+    </RequireRole>
+  );
+}
+
+function AdminShellInner({
   title,
   action,
   children,
@@ -182,7 +200,13 @@ export function AdminShell({
   action?: ReactNode;
   children: ReactNode;
 }) {
-  const { notices, workers, settings, totals } = useHR();
+  const { notices, workers, settings, totals, logout, session } = useHR();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    void navigate({ to: "/", replace: true });
+  };
   const router = useRouter();
   const urgentCount = notices.filter((n) => n.urgency !== "info").length;
   const [searchOpen, setSearchOpen] = useState(false);
@@ -202,7 +226,7 @@ export function AdminShell({
   return (
     <div className="flex min-h-screen gap-3 bg-background p-3">
       <aside className="card-surface sticky top-3 hidden h-[calc(100vh-1.5rem)] w-64 shrink-0 flex-col p-4 lg:flex">
-        <Link to="/" className="mb-6 flex items-center gap-2.5 px-1">
+        <Link to="/admin" className="mb-6 flex items-center gap-2.5 px-1">
           <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
             <Sparkles className="size-4" />
           </span>
@@ -244,7 +268,7 @@ export function AdminShell({
             </>
           ) : (
             <>
-              <Link to="/" className="flex min-w-0 items-center gap-2">
+              <Link to="/admin" className="flex min-w-0 items-center gap-2">
                 <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
                   <Sparkles className="size-4" />
                 </span>
@@ -270,10 +294,17 @@ export function AdminShell({
                 )}
               </Link>
               <img
-                src={avatarUrl(workers[0]?.name ?? "Admin")}
+                src={avatarUrl(session?.name ?? workers[0]?.name ?? "Admin")}
                 alt="Profile"
                 className="size-9 shrink-0 rounded-full border border-border bg-secondary"
               />
+              <button
+                onClick={handleLogout}
+                aria-label="Log out"
+                className="grid size-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground"
+              >
+                <LogOut className="size-4" />
+              </button>
             </>
           )}
         </header>
@@ -331,6 +362,15 @@ export function AdminShell({
             </span>
           </div>
 
+          <button
+            onClick={handleLogout}
+            title={`Log out${session ? ` (${session.email})` : ""}`}
+            aria-label="Log out"
+            className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-danger"
+          >
+            <LogOut className="size-4" />
+          </button>
+
           {action ?? (
             <button className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">
               <UserPlus className="size-4" /> Invite
@@ -350,7 +390,7 @@ export function AdminShell({
         </div>
       )}
 
-      <MobileNav />
+      <MobileNav onLogout={handleLogout} />
     </div>
   );
 }
